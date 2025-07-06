@@ -1,10 +1,11 @@
-import { Module } from '@nestjs/common';
+import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
+import { TenantMiddleware } from './middleware/tenant.middleware';
 
 @Module({
   imports: [
@@ -15,9 +16,9 @@ import { ConfigModule } from '@nestjs/config';
       type: 'postgres',
       host: 'localhost',
       port: 5432,
-      username: 'collabuser',
+      username: 'tim',
       password: 'password',
-      database: 'collabboard',
+      database: 'boardcollab',
       autoLoadEntities: true, 
       synchronize: true,      
     }),
@@ -27,4 +28,10 @@ import { ConfigModule } from '@nestjs/config';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(TenantMiddleware)
+      .forRoutes({ path: '*', method: RequestMethod.ALL });
+  }
+}
