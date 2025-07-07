@@ -15,7 +15,7 @@ import { TasksGateway } from './tasks/tasks.gateway';
     }),
     TypeOrmModule.forRoot({
       type: 'postgres',
-      host: 'localhost',
+      host: 'postgres',
       port: 5432,
       username: 'tim',
       password: 'password',
