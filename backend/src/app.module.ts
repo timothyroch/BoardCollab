@@ -6,6 +6,7 @@ import { TasksModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { TenantMiddleware } from './middleware/tenant.middleware';
+import { TasksGateway } from './tasks/tasks.gateway';
 
 @Module({
   imports: [
@@ -26,7 +27,7 @@ import { TenantMiddleware } from './middleware/tenant.middleware';
     TasksModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, TasksGateway],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
