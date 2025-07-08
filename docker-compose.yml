@@ -4,9 +4,9 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_USER: user
+      POSTGRES_USER: tim
       POSTGRES_PASSWORD: password
-      POSTGRES_DB: collabboard
+      POSTGRES_DB: boardcollab
     ports:
       - '5432:5432'
   backend:
