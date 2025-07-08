@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
-import { Tenant } from '../tenants/tenant.entity';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { Tenant } from 'src/tenants/tenant.entity';
+
 
 @Entity()
 export class User {
@@ -16,5 +17,6 @@ export class User {
   image: string;
 
   @ManyToMany(() => Tenant, tenant => tenant.members)
+  @JoinTable()
   tenants: Tenant[];
 }
