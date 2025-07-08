@@ -7,7 +7,13 @@ import {
 } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({
+  cors: {
+    origin: 'http://localhost:3000',
+    credentials: true,
+  },
+})
+
 export class TasksGateway {
   @WebSocketServer()
   server: Server;
@@ -30,5 +36,11 @@ export class TasksGateway {
     this.server.to(tenantId).emit('taskUpdated', task);
     console.log(`Task updated for tenant ${tenantId}:`, task); 
 
+  }
+    @SubscribeMessage('createTask')
+  handleCreateTask(@MessageBody() data: any, @ConnectedSocket() client: Socket): void {
+    const { tenantId, task } = data;
+    this.server.to(tenantId).emit('taskCreated', task);
+    console.log(`Task created for tenant ${tenantId}:`, task);
   }
 }
