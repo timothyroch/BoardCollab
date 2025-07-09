@@ -33,6 +33,7 @@ export default NextAuth({
                     });
 
                     const data = await res.json();
+                    console.log('resolve-user response:', data);
 
                     token.accessToken = account.access_token;
                     token.userId = data.userId;

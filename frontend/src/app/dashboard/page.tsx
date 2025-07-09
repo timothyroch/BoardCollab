@@ -1,87 +1,47 @@
 'use client';
 
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import socket from "../../../utils/socket";
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
 export default function DashboardPage() {
-    const { data: session, status } = useSession();
-    const router = useRouter();
-    const [tasks, setTasks] = useState<any[]>([]);
-    const [newTaskTitle, setNewTaskTitle] = useState('');
+  const { data: session, status } = useSession();
+  const router = useRouter();
 
-    useEffect(() => {
-        if (status === 'unauthenticated') {
-            router.push('/signin');
-        }
-        if (session?.user?.tenantId) {
-            socket.emit('joinTenant', session.user.tenantId);
-        }
-}, [status, session, router]);
-    useEffect(() => {
-        socket.on('taskCreated', (task) => {
-            setTasks((prevTasks) => [...prevTasks, task]);
-        });
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/signin');
+    }
+  }, [status, router]);
 
-        socket.on('taskUpdated', (updatedTask) => {
-            setTasks((prevTasks) =>
-                prevTasks.map((task) =>
-                    task.id === updatedTask.id ? updatedTask : task
-                )
-            );
-        });
-
-        socket.on('taskDeleted', (deletedTaskId) => {
-            setTasks((prevTasks) =>
-                prevTasks.filter((task) => task.id !== deletedTaskId)
-            );
-        });
-
-        return () => {
-            socket.off('taskCreated');
-            socket.off('taskUpdated');
-            socket.off('taskDeleted');
-        };
-    }, []);
-
-    const createTask = () => {
-        if (!newTaskTitle) return;
-
-        const task = {
-            id: crypto.randomUUID(), // Temporary ID
-            title: newTaskTitle,
-            tenantId: session?.user?.tenantId,
-        };
-
-        socket.emit('createTask', { tenantId: session?.user?.tenantId, task });
-        setNewTaskTitle('');
-    };
-
-
-if (status === 'loading') {
+  if (status === 'loading') {
     return <div>Loading...</div>;
-}
-return (
-    <div>
-        <h1>Dashboard</h1>
-        <p>Welcome, {session?.user?.name}!</p>    
-        <div>
-            <h2>Create New Task</h2>      
-     <input
-                    type="text"
-                    value={newTaskTitle}
-                    onChange={(e) => setNewTaskTitle(e.target.value)}
-                    placeholder="Enter new task title"
-                />
-                <button onClick={createTask}>Add Task</button>
-            </div>
+  }
 
-            <ul>
-                {tasks.map((task) => (
-                    <li key={task.id}>{task.title}</li>
-                ))}
-            </ul>
-        </div>
-)
+  const handleTenantClick = (tenantId: string) => {
+    router.push(`/dashboard/${tenantId}`);
+  };
+
+  const tenants = session?.user?.tenantId
+    ? [{ id: session.user.tenantId, name: 'Your Workspace' }] // fallback in case user.tenants isn't ready
+    : [];
+
+  return (
+    <div className="p-8">
+      <h1 className="text-3xl font-bold mb-4">Welcome, {session?.user?.name}</h1>
+      <h2 className="text-xl mb-2">Your Workspaces</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {tenants.map((tenant) => (
+          <div
+            key={tenant.id}
+            className="border p-4 rounded shadow cursor-pointer hover:bg-gray-100 transition"
+            onClick={() => handleTenantClick(tenant.id)}
+          >
+            <h3 className="text-lg font-semibold">{tenant.name}</h3>
+            <p className="text-sm text-gray-600">Click to manage tasks</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
