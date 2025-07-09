@@ -1,7 +1,8 @@
-import { Controller, Get, UseGuards, Request } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
+import { TasksService } from './tasks.service';
 
 @Controller('tasks')
 export class TasksController {
@@ -24,4 +25,17 @@ export class TasksController {
   getPublicData() {
     return { message: 'This is a public route.' };
   }
+
+
+  constructor(private readonly tasksService: TasksService) {}
+
+  @Get()
+  async getTasks(@Query('tenantId') tenantId: string) {
+    if (!tenantId) {
+      return { error: 'Missing tenantId' };
+    }
+
+    return this.tasksService.getTasksByTenant(tenantId);
+  }
+
 }
