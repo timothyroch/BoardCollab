@@ -7,6 +7,8 @@ import { TenantMiddleware } from './middleware/tenant.middleware';
 import { TasksGateway } from './tasks/tasks.gateway';
 import { User } from './auth/user.entity';
 import { Tenant } from './tenants/tenant.entity';
+import { TenantsModule } from './tenants/tenants.module';
+
 
 
 @Module({
@@ -27,6 +29,7 @@ import { Tenant } from './tenants/tenant.entity';
     }),
     AuthModule,
     TasksModule,
+    TenantsModule,
   ],
   controllers: [],
   providers: [TasksGateway],

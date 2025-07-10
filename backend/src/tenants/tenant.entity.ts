@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, ManyToOne } from 'typeorm';
 import { User } from '../auth/user.entity';
 
 @Entity()
@@ -11,4 +11,7 @@ export class Tenant {
 
   @ManyToMany(() => User, user => user.tenants)
   members: User[];
+
+  @ManyToOne(() => User)
+  leader: User;
 }
