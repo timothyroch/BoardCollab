@@ -9,6 +9,8 @@ services:
       POSTGRES_DB: boardcollab
     ports:
       - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
   backend:
     build: ./backend
     ports:
@@ -21,3 +23,5 @@ services:
       - '3000:3000'
     depends_on:
       - backend
+volumes:
+  postgres_data:
