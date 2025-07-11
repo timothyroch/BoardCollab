@@ -12,7 +12,7 @@ export default function DashboardPage() {
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
   const [createdTenant, setCreatedTenant] = useState<any>(null);
-  const [userId, setUserId] = useState<string | null>(null); 
+  const [userTenants, setUserTenants] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -24,6 +24,26 @@ export default function DashboardPage() {
   const handleTenantClick = (tenantId: string) => {
     router.push(`/dashboard/${tenantId}`);
   };
+
+useEffect(() => {
+  if (status !== 'authenticated') return;
+
+  const fetchTenants = async () => {
+    const userId = session?.user?.userId;
+    if (!userId) return;
+
+    try {
+      const res = await fetch(`/api/get-tenants?userId=${userId}`);
+      const data = await res.json();
+      setUserTenants(data);
+    } catch (err) {
+      console.error('Failed to fetch tenants', err);
+    }
+  };
+
+  fetchTenants(); 
+}, [status, session]);
+
 
 const handleCreateTenant = async () => {
   if (!tenantName.trim()) {
@@ -70,10 +90,10 @@ const handleCreateTenant = async () => {
     ? [{ id: session.user.tenantId, name: 'Your Workspace' }]
     : [];
 
-  const tenants = [...existingTenants];
-  if (createdTenant) {
-    tenants.push(createdTenant);
-  }
+const tenants = createdTenant
+  ? [...userTenants, createdTenant]
+  : userTenants;
+
 
   return (
     <div className="p-8">

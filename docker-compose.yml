@@ -11,6 +11,17 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - '8080:80'
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: adminpass
+    depends_on:
+      - postgres
   backend:
     build: ./backend
     ports:
@@ -27,5 +38,4 @@ services:
       - ./frontend/.env.local
 volumes:
   postgres_data:
-
-
+  
