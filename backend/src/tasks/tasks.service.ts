@@ -10,6 +10,16 @@ export class TasksService {
     private readonly taskRepository: Repository<Task>,
   ) {}
 
+  async createTask(title: string, tenantId: string): Promise<Task> {
+  const task = this.taskRepository.create({
+    title,
+    tenantId,
+  });
+
+  return this.taskRepository.save(task);
+}
+
+
   async getTasksByTenant(tenantId: string) {
     return this.taskRepository.find({
       where: { tenantId },

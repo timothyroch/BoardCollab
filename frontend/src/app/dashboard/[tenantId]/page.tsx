@@ -25,11 +25,25 @@ export default function TenantDashboard() {
 
     socket.emit('joinTenant', tenantId);
 
-    const fetchTasks = async () => {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/tasks?tenantId=${tenantId}`);
-      const data = await res.json();
-      setTasks(data);
-    };
+const fetchTasks = async () => {
+  try {
+    const res = await fetch(`/api/get-tasks?tenantId=${tenantId}`);
+    const data = await res.json();
+
+    if (!Array.isArray(data)) {
+      console.error('Unexpected task data:', data);
+      setTasks([]);
+      return;
+    }
+
+    setTasks(data);
+  } catch (err) {
+    console.error('Failed to fetch tasks:', err);
+    setTasks([]); 
+  }
+};
+
+
 
     fetchTasks();
 
