@@ -36,25 +36,34 @@ export class InvitesService {
     });
   }
 
-  async acceptInvite(inviteId: string, userId: string) {
-    const invite = await this.inviteRepo.findOne({
-      where: { id: inviteId },
-      relations: ['tenant'],
-    });
+async acceptInvite(inviteId: string, userId: string) {
+  const invite = await this.inviteRepo.findOne({
+    where: { id: inviteId },
+    relations: ['tenant'],
+  });
 
-    if (!invite || invite.status !== 'pending') {
-      throw new NotFoundException('Invite not found or already handled');
-    }
-
-    const user = await this.userRepo.findOne({ where: { id: userId } });
-    if (!user) throw new NotFoundException('User not found');
-
-    invite.status = 'accepted';
-    await this.inviteRepo.save(invite);
-
-    invite.tenant.members = [...invite.tenant.members, user];
-    await this.tenantRepo.save(invite.tenant);
+  if (!invite || invite.status !== 'pending') {
+    throw new NotFoundException('Invite not found or already handled');
   }
+
+  const user = await this.userRepo.findOne({
+    where: { id: userId },
+    relations: ['tenants'],
+  });
+
+  if (!user) throw new NotFoundException('User not found');
+
+  invite.status = 'accepted';
+  await this.inviteRepo.save(invite);
+
+  const alreadyMember = user.tenants.some(t => t.id === invite.tenant.id);
+  if (!alreadyMember) {
+    user.tenants.push(invite.tenant);
+    await this.userRepo.save(user);
+  }
+}
+
+
 
   async rejectInvite(inviteId: string) {
     const invite = await this.inviteRepo.findOne({ where: { id: inviteId } });

@@ -8,6 +8,9 @@ import { TasksGateway } from './tasks/tasks.gateway';
 import { User } from './auth/user.entity';
 import { Tenant } from './tenants/tenant.entity';
 import { TenantsModule } from './tenants/tenants.module';
+import { Invite } from './invites/invite.entity';
+import { InvitesModule } from './invites/invites.module';
+
 
 
 
@@ -24,15 +27,16 @@ import { TenantsModule } from './tenants/tenants.module';
       password: 'password',
       database: 'boardcollab',
       autoLoadEntities: true, 
-      entities: [User, Tenant],
+      entities: [User, Tenant, Invite],
       synchronize: true,      
     }),
     AuthModule,
     TasksModule,
     TenantsModule,
+    InvitesModule,
   ],
   controllers: [],
-  providers: [TasksGateway],
+  providers: [],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
