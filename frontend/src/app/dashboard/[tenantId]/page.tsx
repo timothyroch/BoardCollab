@@ -6,9 +6,10 @@ import socket from '../../../../utils/socket';
 import { useSession } from 'next-auth/react';
 
 interface Task {
-  id: string;
+  id?: string;
   title: string;
   tenantId: string;
+  creatorId: string;
 }
 
 export default function TenantDashboard() {
@@ -58,66 +59,70 @@ export default function TenantDashboard() {
   }
 };
 
-  useEffect(() => {
-    if (!tenantId) return;
+useEffect(() => {
+  if (!tenantId) return;
 
-    socket.emit('joinTenant', tenantId);
+  socket.emit('joinTenant', tenantId);
 
-const fetchTasks = async () => {
-  try {
-    const res = await fetch(`/api/get-tasks?tenantId=${tenantId}`);
-    const data = await res.json();
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch(`/api/get-tasks?tenantId=${tenantId}`);
+      const data = await res.json();
 
-    if (!Array.isArray(data)) {
-      console.error('Unexpected task data:', data);
+      if (!Array.isArray(data)) {
+        console.error('Unexpected task data:', data);
+        setTasks([]);
+        return;
+      }
+
+      setTasks(data);
+    } catch (err) {
+      console.error('Failed to fetch tasks:', err);
       setTasks([]);
-      return;
     }
+  };
 
-    setTasks(data);
-  } catch (err) {
-    console.error('Failed to fetch tasks:', err);
-    setTasks([]); 
-  }
-};
+  fetchTasks();
 
+  const handleTaskCreated = (task: Task) => {
+    if (task.tenantId === tenantId) {
+      setTasks((prev) => [...prev, task]);
+    }
+  };
 
+  const handleTaskUpdated = (updatedTask: Task) => {
+    if (updatedTask.tenantId === tenantId) {
+      setTasks((prev) =>
+        prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
+      );
+    }
+  };
 
-    fetchTasks();
+  const handleTaskDeleted = (deletedTaskId: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== deletedTaskId));
+  };
 
-    socket.on('taskCreated', (task: Task) => {
-      if (task.tenantId === tenantId) {
-        setTasks((prev) => [...prev, task]);
-      }
-    });
+  socket.on('taskCreated', handleTaskCreated);
+  socket.on('taskUpdated', handleTaskUpdated);
+  socket.on('taskDeleted', handleTaskDeleted);
 
-    socket.on('taskUpdated', (updatedTask: Task) => {
-      if (updatedTask.tenantId === tenantId) {
-        setTasks((prev) =>
-          prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-        );
-      }
-    });
+  return () => {
+    socket.off('taskCreated', handleTaskCreated);
+    socket.off('taskUpdated', handleTaskUpdated);
+    socket.off('taskDeleted', handleTaskDeleted);
+  };
+}, [tenantId]);
 
-    socket.on('taskDeleted', (deletedTaskId: string) => {
-      setTasks((prev) => prev.filter((task) => task.id !== deletedTaskId));
-    });
-
-    return () => {
-      socket.off('taskCreated');
-      socket.off('taskUpdated');
-      socket.off('taskDeleted');
-    };
-  }, [tenantId]);
 
   const createTask = () => {
     if (!newTaskTitle) return;
 
     const task: Task = {
-      id: crypto.randomUUID(),
       title: newTaskTitle,
       tenantId: tenantId as string,
+      creatorId: session?.user?.userId,
     };
+    console.log("EMITTING TASK:", task); 
 
     socket.emit('createTask', { tenantId, task });
     setNewTaskTitle('');

@@ -49,9 +49,13 @@ export class TasksGateway {
 
     if (!tenantId || !task?.title) return;
 
-    const savedTask = await this.tasksService.createTask(task.title, tenantId);
+    const savedTask = await this.tasksService.createTask(task.title, tenantId, task.creatorId);
 
-    this.server.to(tenantId).emit('taskCreated', savedTask);
+    this.server.to(tenantId).emit('taskCreated', {
+  ...savedTask,
+  tenantId,
+});
+
     console.log(`Task created for tenant ${tenantId}:`, savedTask);
   }
 }
