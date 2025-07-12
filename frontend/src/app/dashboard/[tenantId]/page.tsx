@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import socket from '../../../../utils/socket';
+import { useSession } from 'next-auth/react';
 
 interface Task {
   id: string;
@@ -19,6 +20,43 @@ export default function TenantDashboard() {
       : undefined;
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteError, setInviteError] = useState('');
+  const [inviteSuccess, setInviteSuccess] = useState('');
+  const { data: session } = useSession();
+
+    const sendInvite = async () => {
+  setInviteError('');
+  setInviteSuccess('');
+
+  if (!inviteEmail.trim()) {
+    setInviteError('Please enter a valid email');
+    return;
+  }
+
+  try {
+    const res = await fetch('/api/send-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: inviteEmail,
+        tenantId,
+        inviterId: session?.user?.userId, 
+      }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      setInviteError(data.message || 'Failed to send invite');
+    } else {
+      setInviteSuccess('Invite sent');
+      setInviteEmail('');
+    }
+  } catch (err) {
+    setInviteError('Network error');
+  }
+};
 
   useEffect(() => {
     if (!tenantId) return;
@@ -112,6 +150,25 @@ const fetchTasks = async () => {
           </li>
         ))}
       </ul>
+      <div className="mt-8 border p-4 rounded max-w-md">
+  <h3 className="text-lg font-semibold mb-2">Invite User to Workspace</h3>
+  <input
+    type="email"
+    placeholder="Enter user's email"
+    className="border p-2 rounded w-full mb-2"
+    value={inviteEmail}
+    onChange={(e) => setInviteEmail(e.target.value)}
+  />
+  <button
+    className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+    onClick={sendInvite}
+  >
+    Send Invite
+  </button>
+  {inviteError && <p className="text-red-600 text-sm mt-2">{inviteError}</p>}
+  {inviteSuccess && <p className="text-green-600 text-sm mt-2">{inviteSuccess}</p>}
+</div>
+
     </div>
   );
 }

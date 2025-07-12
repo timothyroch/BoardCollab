@@ -13,6 +13,7 @@ export default function DashboardPage() {
   const [error, setError] = useState('');
   const [createdTenant, setCreatedTenant] = useState<any>(null);
   const [userTenants, setUserTenants] = useState<any[]>([]);
+  const [invites, setInvites] = useState<any[]>([]);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -43,6 +44,18 @@ useEffect(() => {
 
   fetchTenants(); 
 }, [status, session]);
+
+const fetchInvites = async () => {
+  try {
+    const res = await fetch(`/api/get-invites?email=${session?.user?.email}`);
+    const data = await res.json();
+    if (Array.isArray(data)) setInvites(data);
+  } catch (err) {
+    console.error('Failed to fetch invites', err);
+  }
+};
+
+fetchInvites();
 
 
 const handleCreateTenant = async () => {
@@ -83,6 +96,32 @@ const handleCreateTenant = async () => {
   }
 
   setIsCreating(false);
+};
+
+const handleAccept = async (inviteId: string) => {
+  try {
+    await fetch('/api/invite-accept', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inviteId, userId: session?.user?.userId }),
+    });
+    setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+  } catch (err) {
+    console.error('Failed to accept invite', err);
+  }
+};
+
+const handleReject = async (inviteId: string) => {
+  try {
+    await fetch('/api/invite-reject', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ inviteId }),
+    });
+    setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+  } catch (err) {
+    console.error('Failed to reject invite', err);
+  }
 };
 
 
@@ -135,6 +174,36 @@ const tenants = createdTenant
   </button>
   {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
 </div>
+{invites.length > 0 && (
+  <div className="mt-8">
+    <h2 className="text-xl mb-2">Pending Invites</h2>
+    <ul className="space-y-2">
+      {invites.map((invite) => (
+        <li key={invite.id} className="border p-4 rounded shadow">
+          <div className="flex justify-between items-center">
+            <div>
+              <p><strong>{invite.tenant?.name}</strong> invited you</p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleAccept(invite.id)}
+                className="bg-green-600 text-white px-3 py-1 rounded"
+              >
+                Accept
+              </button>
+              <button
+                onClick={() => handleReject(invite.id)}
+                className="bg-red-600 text-white px-3 py-1 rounded"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
+  </div>
+)}
 
     </div>
   );
