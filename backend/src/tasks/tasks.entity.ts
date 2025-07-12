@@ -1,4 +1,12 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+} from 'typeorm';
+import { User } from '../auth/user.entity';
+import { Tenant } from '../tenants/tenant.entity';
 
 @Entity()
 export class Task {
@@ -8,8 +16,20 @@ export class Task {
   @Column()
   title: string;
 
-  @Column()
-  tenantId: string;
+  @Column({ nullable: true })
+  description: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  creator: User;
+
+  @ManyToOne(() => User, { nullable: true })
+  assignee: User;
+
+  @ManyToOne(() => Tenant)
+  tenant: Tenant;
+
+  @Column({ type: 'date', nullable: true })
+  dueDate: Date;
 
   @CreateDateColumn()
   createdAt: Date;

@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { Tenant } from 'src/tenants/tenant.entity';
+import { Invite } from '../invites/invite.entity';
 
 
 @Entity()
@@ -19,4 +20,7 @@ export class User {
   @ManyToMany(() => Tenant, tenant => tenant.members)
   @JoinTable()
   tenants: Tenant[];
+
+@OneToMany(() => Invite, invite => invite.inviter)
+invitesSent: Invite[];
 }
