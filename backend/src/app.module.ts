@@ -1,12 +1,15 @@
 import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { TenantMiddleware } from './middleware/tenant.middleware';
 import { TasksGateway } from './tasks/tasks.gateway';
+import { User } from './auth/user.entity';
+import { Tenant } from './tenants/tenant.entity';
+import { TenantsModule } from './tenants/tenants.module';
+
+
 
 @Module({
   imports: [
@@ -21,13 +24,15 @@ import { TasksGateway } from './tasks/tasks.gateway';
       password: 'password',
       database: 'boardcollab',
       autoLoadEntities: true, 
+      entities: [User, Tenant],
       synchronize: true,      
     }),
     AuthModule,
     TasksModule,
+    TenantsModule,
   ],
-  controllers: [AppController],
-  providers: [AppService, TasksGateway],
+  controllers: [],
+  providers: [TasksGateway],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
