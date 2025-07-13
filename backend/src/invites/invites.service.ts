@@ -46,6 +46,7 @@ console.log('[InvitesService] User does not exist, preparing to send email...');
     inviter,
     tenant,
     status: 'pending',
+    token,
   });
 
   await this.inviteRepo.save(invite);
@@ -91,6 +92,45 @@ async acceptInvite(inviteId: string, userId: string) {
     await this.userRepo.save(user);
   }
 }
+
+async acceptInviteByEmail(email: string, userId: string) {
+  const invite = await this.inviteRepo.findOne({
+    where: { email, status: 'pending' },
+    relations: ['tenant'],
+    order: { createdAt: 'DESC' }, 
+  });
+
+  if (!invite) throw new NotFoundException('No pending invite found for this email');
+
+  const user = await this.userRepo.findOne({
+    where: { id: userId },
+    relations: ['tenants'],
+  });
+
+  if (!user) throw new NotFoundException('User not found');
+
+  invite.status = 'accepted';
+  await this.inviteRepo.save(invite);
+
+  const alreadyMember = user.tenants.some(t => t.id === invite.tenant.id);
+  if (!alreadyMember) {
+    user.tenants.push(invite.tenant);
+    await this.userRepo.save(user);
+  }
+
+  return { message: 'Invite accepted and tenant assigned' };
+}
+
+async getInviteByToken(token: string) {
+  const invite = await this.inviteRepo.findOne({
+    where: { token },
+    relations: ['tenant'],
+  });
+
+  if (!invite) throw new NotFoundException('Invite not found');
+  return invite;
+}
+
 
 
 

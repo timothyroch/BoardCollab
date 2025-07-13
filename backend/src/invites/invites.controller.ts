@@ -25,4 +25,15 @@ export class InvitesController {
   async rejectInvite(@Body() body: { inviteId: string }) {
     return this.invitesService.rejectInvite(body.inviteId);
   }
+  @Post('accept-from-email')
+async acceptInviteFromEmail(@Body() body: { email: string; userId: string }) {
+  return this.invitesService.acceptInviteByEmail(body.email, body.userId);
+}
+
+@Get('resolve-token')
+async resolveToken(@Query('token') token: string) {
+  return this.invitesService.getInviteByToken(token);
+}
+
+
 }

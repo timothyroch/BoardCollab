@@ -21,4 +21,8 @@ export class Invite {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @Column({ nullable: true })
+  token: string;
+
 }

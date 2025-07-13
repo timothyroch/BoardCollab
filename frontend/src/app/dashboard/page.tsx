@@ -45,17 +45,22 @@ useEffect(() => {
   fetchTenants(); 
 }, [status, session]);
 
-const fetchInvites = async () => {
-  try {
-    const res = await fetch(`/api/get-invites?email=${session?.user?.email}`);
-    const data = await res.json();
-    if (Array.isArray(data)) setInvites(data);
-  } catch (err) {
-    console.error('Failed to fetch invites', err);
-  }
-};
+useEffect(() => {
+  if (!session?.user?.email) return;
 
-fetchInvites();
+  const fetchInvites = async () => {
+    try {
+      const res = await fetch(`/api/get-invites?email=${session.user.email}`);
+      const data = await res.json();
+      if (Array.isArray(data)) setInvites(data);
+    } catch (err) {
+      console.error('Failed to fetch invites', err);
+    }
+  };
+
+  fetchInvites();
+}, [session?.user?.email]);
+
 
 
 const handleCreateTenant = async () => {
