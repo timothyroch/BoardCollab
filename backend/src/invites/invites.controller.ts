@@ -7,6 +7,7 @@ export class InvitesController {
 
   @Post('send')
   async sendInvite(@Body() body: { email: string; tenantId: string; inviterId: string }) {
+    console.log('[InvitesController] POST /invites/send called with:', body);
     return this.invitesService.sendInvite(body.email, body.tenantId, body.inviterId);
   }
 

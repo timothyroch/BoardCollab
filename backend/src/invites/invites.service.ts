@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { Invite } from './invite.entity';
 import { Tenant } from '../tenants/tenant.entity';
 import { User } from '../auth/user.entity';
+import { randomUUID } from 'crypto';
+import { MailerService } from '../mailer/email.service';
 
 @Injectable()
 export class InvitesService {
@@ -16,17 +18,44 @@ export class InvitesService {
     private readonly tenantRepo: Repository<Tenant>,
   ) {}
 
-  async sendInvite(email: string, tenantId: string, inviterId: string) {
-    const inviter = await this.userRepo.findOne({ where: { id: inviterId } });
-    const tenant = await this.tenantRepo.findOne({ where: { id: tenantId } });
+async sendInvite(email: string, tenantId: string, inviterId: string) {
+  const inviter = await this.userRepo.findOne({ where: { id: inviterId } });
+  const tenant = await this.tenantRepo.findOne({ where: { id: tenantId } });
 
-    if (!inviter || !tenant) {
-      throw new NotFoundException('Inviter or tenant not found');
-    }
-
-    const invite = this.inviteRepo.create({ email, inviter, tenant });
-    return this.inviteRepo.save(invite);
+  if (!inviter || !tenant) {
+    throw new NotFoundException('Inviter or tenant not found');
   }
+
+console.log('[InvitesService] Checking user existence for:', email);
+const existingUser = await this.userRepo.findOne({ where: { email } });
+
+if (existingUser) {
+  console.log('[InvitesService] User exists, skipping email.');
+  const invite = this.inviteRepo.create({ email, inviter, tenant });
+  await this.inviteRepo.save(invite);
+  return { alreadyRegistered: true, message: 'User exists; invite created' };
+}
+
+console.log('[InvitesService] User does not exist, preparing to send email...');
+
+  
+  const token = randomUUID(); 
+
+  const invite = this.inviteRepo.create({
+    email,
+    inviter,
+    tenant,
+    status: 'pending',
+  });
+
+  await this.inviteRepo.save(invite);
+
+  const inviteLink = `${process.env.FRONTEND_URL}/accept-invite?token=${token}`;
+
+  await MailerService.sendInviteEmail(email, inviter.name, tenant.name, inviteLink);
+
+  return { alreadyRegistered: false, message: 'Email invite sent' };
+}
 
   async getInvitesByEmail(email: string) {
     return this.inviteRepo.find({
