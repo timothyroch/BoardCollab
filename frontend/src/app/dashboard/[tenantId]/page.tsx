@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import socket from '../../../../utils/socket';
 import { useSession } from 'next-auth/react';
 import TaskCreator from '@/components/TaskCreator';
+import TaskList from '@/components/TaskList';
 
 interface Task {
   id?: string;
@@ -122,13 +123,8 @@ useEffect(() => {
           userId={session?.user?.userId}
           onTaskCreated={(task) => setTasks((prev) => [...prev, task])}
         />
-      <ul className="space-y-2">
-        {tasks.map((task) => (
-          <li key={task.id} className="p-2 border rounded">
-            {task.title}
-          </li>
-        ))}
-      </ul>
+      <TaskList tasks={tasks} />
+
       <div className="mt-8 border p-4 rounded max-w-md">
   <h3 className="text-lg font-semibold mb-2">Invite User to Workspace</h3>
   <input
