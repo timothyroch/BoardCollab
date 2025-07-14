@@ -10,6 +10,7 @@ import { Tenant } from './tenants/tenant.entity';
 import { TenantsModule } from './tenants/tenants.module';
 import { Invite } from './invites/invite.entity';
 import { InvitesModule } from './invites/invites.module';
+import { UsersModule } from './users/users.module';
 
 
 
@@ -34,6 +35,7 @@ import { InvitesModule } from './invites/invites.module';
     TasksModule,
     TenantsModule,
     InvitesModule,
+    UsersModule,
   ],
   controllers: [],
   providers: [],
