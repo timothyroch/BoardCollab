@@ -1,5 +1,7 @@
 'use client';
 
+import { useCallback } from 'react';
+
 interface Task {
   id: string;
   title: string;
@@ -12,9 +14,10 @@ interface Task {
 interface MySpaceSectionProps {
   tasks: Task[];
   userEmail?: string;
+  tenantId: string;
 }
 
-export default function MySpaceSection({ tasks, userEmail }: MySpaceSectionProps) {
+export default function MySpaceSection({ tasks, userEmail, tenantId }: MySpaceSectionProps) {
   if (!userEmail) {
     return <p className="text-gray-600">You must be logged in to view your tasks.</p>;
   }
@@ -22,6 +25,31 @@ export default function MySpaceSection({ tasks, userEmail }: MySpaceSectionProps
   const assignedTasks = tasks.filter(
     (task) => task.assignees?.some(a => a.email === userEmail)
   );
+const handleSync = useCallback(async (task: Task) => {
+  const res = await fetch('/api/check-calendar-scope');
+
+  if (res.status === 403) {
+    window.location.href = `/api/calendar-consent?tenantId=${tenantId}`;
+
+    return;
+  }
+
+  const syncRes = await fetch('/api/sync-to-calendar', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      title: task.title,
+      dueDate: task.dueDate,
+    }),
+  });
+
+  if (!syncRes.ok) {
+    alert('Failed to sync task');
+  } else {
+    alert('Task synced to Google Calendar');
+  }
+}, []);
+
 
   return (
     <div>
@@ -45,6 +73,12 @@ export default function MySpaceSection({ tasks, userEmail }: MySpaceSectionProps
               <p className="text-sm text-gray-400">
                 Created by: {task.creator?.email || 'Unknown'}
               </p>
+               <button
+                className="mt-2 px-3 py-1 text-sm bg-blue-600 text-white rounded"
+                onClick={() => handleSync(task)}
+              >
+                Sync to Google Calendar
+              </button>
             </li>
           ))}
         </ul>

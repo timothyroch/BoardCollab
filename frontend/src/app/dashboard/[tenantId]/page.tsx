@@ -108,7 +108,7 @@ useEffect(() => {
       )}
 
       {activeTab === 'my-space' && (
-        <MySpaceSection tasks={tasks} userEmail={userEmail} />
+        <MySpaceSection tasks={tasks} userEmail={userEmail ?? undefined} tenantId={tenantId!}/>
       )}
 
       {activeTab === 'group' && tenantId && (
