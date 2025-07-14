@@ -1,6 +1,9 @@
 {
   "dependencies": {
+    "date-fns": "^4.1.0",
+    "lucide-react": "^0.525.0",
     "nodemailer": "^7.0.5",
+    "react-day-picker": "^9.8.0",
     "resend": "^4.6.0"
   }
 }

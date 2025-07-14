@@ -16,7 +16,7 @@ export class TasksService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-async createTask(title: string, tenantId: string, creatorId: string): Promise<Task> {
+async createTask(title: string, tenantId: string, creatorId: string, dueDate: any, assigneeEmail: any): Promise<Task> {
   const tenant = await this.tenantRepo.findOne({ where: { id: tenantId } });
   const creator = await this.userRepo.findOne({ where: { id: creatorId } });
 
@@ -24,11 +24,20 @@ async createTask(title: string, tenantId: string, creatorId: string): Promise<Ta
     throw new Error('Invalid tenant or creator');
   }
 
-  const task = this.taskRepository.create({
-    title,
-    tenant,
-    creator,
-  });
+    const assignee = assigneeEmail
+    ? await this.userRepo.findOne({ where: { email: assigneeEmail } })
+    : null;
+
+  const due = dueDate ? new Date(dueDate) : null;
+
+
+  const task: Task = this.taskRepository.create({
+    title: title,
+    tenant: tenant,
+    creator: creator,
+    assignee: assignee,
+    dueDate: due,
+  } as Partial<Task>);
 
   return this.taskRepository.save(task);
 }
