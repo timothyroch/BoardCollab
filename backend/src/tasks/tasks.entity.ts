@@ -4,6 +4,8 @@ import {
   Column,
   CreateDateColumn,
   ManyToOne,
+  ManyToMany,
+  JoinTable,
 } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Tenant } from '../tenants/tenant.entity';
@@ -22,8 +24,10 @@ export class Task {
   @ManyToOne(() => User, { nullable: true })
   creator: User;
 
-  @ManyToOne(() => User, { nullable: true })
-  assignee: User;
+  @ManyToMany(() => User)
+  @JoinTable()
+  assignees: User[];
+
 
   @ManyToOne(() => Tenant)
   tenant: Tenant;

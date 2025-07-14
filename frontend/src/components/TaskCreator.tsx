@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import Input from "./ui/input";
 import Button from "./ui/Button";
@@ -20,6 +20,24 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [users, setUsers] = useState<{ id: string; email: string; name?: string }[]>([]);
+  const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
+
+  useEffect(() => {
+  if (!tenantId) return;
+  fetch(`/api/get-users?tenantId=${tenantId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        setUsers(data);
+      } else {
+        console.error("Unexpected user data:", data);
+      }
+    })
+    .catch(err => console.error("Failed to fetch users:", err));
+}, [tenantId]);
+
+
 
   const handleSubmit = async () => {
     setError("");
@@ -35,8 +53,8 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
       return;
     }
 
-    if (!assignee.trim()) {
-      setError("Assignee email is required.");
+    if (selectedAssignees.length === 0) {
+      setError("At least one assignee is required.");
       return;
     }
 
@@ -45,7 +63,7 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
       tenantId,
       creatorId: userId,
       dueDate: dueDate.toISOString(),
-      assigneeEmail: assignee,
+      assigneeEmails: selectedAssignees,
     };
 
     setSubmitting(true);
@@ -90,14 +108,22 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
       </div>
 
       <div className="mb-4">
-        <Label htmlFor="assignee">Assignee Email</Label>
-        <Input
-          id="assignee"
-          type="email"
-          value={assignee}
-          onChange={(e) => setAssignee(e.target.value)}
-          placeholder="e.g. teammate@example.com"
-        />
+        <Label htmlFor="assignee">Assign To</Label>
+            <select
+        id="assignees"
+        multiple
+        value={selectedAssignees}
+        onChange={(e) =>
+          setSelectedAssignees(Array.from(e.target.selectedOptions, (option) => option.value))
+        }
+        className="border p-2 rounded w-full h-32"
+      >
+        {users.map((user) => (
+          <option key={user.id} value={user.email}>
+            {user.email}
+          </option>
+        ))}
+      </select>
       </div>
 
       <div className="mb-4">

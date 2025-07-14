@@ -45,8 +45,8 @@ export class TasksController {
 
 @Post()
 async createTask(@Body() body: any) {
-  const { title, tenantId, creatorId, dueDate, assigneeEmail } = body;
-  if (!title || !tenantId || !creatorId) {
+  const { title, tenantId, creatorId, dueDate, assigneeEmails } = body;
+  if (!title || !tenantId || !creatorId || !Array.isArray(assigneeEmails) || assigneeEmails.length === 0) {
     throw new BadRequestException('Missing required fields');
   }
   const task = await this.tasksService.createTask(
@@ -54,7 +54,7 @@ async createTask(@Body() body: any) {
     tenantId,
     creatorId,
     dueDate,
-    assigneeEmail,
+    assigneeEmails,
   );
   this.tasksGateway.server
     .to(tenantId)

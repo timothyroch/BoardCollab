@@ -14,6 +14,9 @@ interface Task {
   title: string;
   tenantId: string;
   creatorId: string;
+  creator?: { email: string };
+  assignees?: { email: string }[];
+  dueDate?: string;
 }
 
 export default function TenantDashboard() {
@@ -67,6 +70,25 @@ const userEmail = session?.user?.email;
   }
 };
 
+useEffect(() => {
+  if (!tenantId) return;
+
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch(`/api/get-tasks?tenantId=${tenantId}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        console.error('Unexpected tasks response:', data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tasks:', err);
+    }
+  };
+
+  fetchTasks();
+}, [tenantId]);
 
 
 

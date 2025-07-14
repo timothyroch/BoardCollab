@@ -8,7 +8,7 @@ interface Task {
   title: string;
   tenantId: string;
   creator?: { email: string };
-  assignee?: { email: string };
+  assignees?: { email: string }[];
   dueDate?: string;
 }
 
@@ -44,7 +44,7 @@ export default function TaskList({ tasks }: TaskListProps) {
           <div className="space-y-2 text-sm">
             <p className="text-gray-300">
               <span className="font-semibold text-gold-400">Assignee:</span>{' '}
-              {task.assignee?.email ?? 'Unassigned'}
+              {task.assignees && task.assignees.length > 0 ? task.assignees.map(a => a.email).join(', ') : 'Unassigned'}
             </p>
             <p className="text-gray-300">
               <span className="font-semibold text-gold-400">Due:</span>{' '}

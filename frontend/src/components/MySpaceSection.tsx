@@ -5,7 +5,7 @@ interface Task {
   title: string;
   tenantId: string;
   creator?: { email: string };
-  assignee?: { email: string };
+  assignees?: { email: string }[];
   dueDate?: string;
 }
 
@@ -20,7 +20,7 @@ export default function MySpaceSection({ tasks, userEmail }: MySpaceSectionProps
   }
 
   const assignedTasks = tasks.filter(
-    (task) => task.assignee?.email === userEmail
+    (task) => task.assignees?.some(a => a.email === userEmail)
   );
 
   return (
@@ -31,7 +31,7 @@ export default function MySpaceSection({ tasks, userEmail }: MySpaceSectionProps
       </p>
 
       {assignedTasks.length === 0 ? (
-        <p className="text-gray-500">No tasks assigned to yu.</p>
+        <p className="text-gray-500">No tasks assigned to you.</p>
       ) : (
         <ul className="space-y-2">
           {assignedTasks.map((task) => (
