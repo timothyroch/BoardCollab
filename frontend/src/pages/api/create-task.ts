@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from 'next';
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method !== 'POST') return res.status(405).json({ message: 'Method not allowed' });
 
-  const { title, tenantId, creatorId, dueDate, assigneeEmails } = req.body;
+  const { title, tenantId, creatorId, dueDate, assigneeEmails, status = 'to_do' } = req.body;
 console.log("title:", title);
 console.log("tenantId:", tenantId);
 console.log("creatorId:", creatorId);
@@ -20,7 +20,7 @@ console.log("length:", assigneeEmails?.length);
     const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/tasks`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, tenantId, creatorId, dueDate, assigneeEmails }),
+      body: JSON.stringify({ title, tenantId, creatorId, dueDate, assigneeEmails, status }),
     });
 
     const data = await response.json();

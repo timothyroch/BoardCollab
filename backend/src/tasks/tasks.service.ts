@@ -16,7 +16,13 @@ export class TasksService {
     private readonly userRepo: Repository<User>,
   ) {}
 
-async createTask(title: string, tenantId: string, creatorId: string, dueDate: any, assigneeEmails: string[]): Promise<Task> {
+async createTask(title: string,
+   tenantId: string,
+    creatorId: string,
+    dueDate: any,
+    assigneeEmails: string[],
+    status: 'to_do' | 'in_progress' | 'done' = 'to_do' 
+  ): Promise<Task> {
   const tenant = await this.tenantRepo.findOne({ where: { id: tenantId } });
   const creator = await this.userRepo.findOne({ where: { id: creatorId } });
 
@@ -37,6 +43,7 @@ async createTask(title: string, tenantId: string, creatorId: string, dueDate: an
     creator,
     assignees,
     dueDate: due,
+    status,
   } as Partial<Task>);
 
   return this.taskRepository.save(task);
@@ -50,4 +57,16 @@ async createTask(title: string, tenantId: string, creatorId: string, dueDate: an
       order: { createdAt: 'DESC' },
     });
   }
+
+  async updateStatus(taskId: string, status: 'to_do' | 'in_progress' | 'done'): Promise<Task> {
+  const task = await this.taskRepository.findOne({ where: { id: taskId } });
+
+  if (!task) {
+    throw new Error('Task not found');
+  }
+
+  task.status = status;
+  return this.taskRepository.save(task);
+}
+
 }

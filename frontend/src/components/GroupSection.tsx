@@ -4,87 +4,39 @@ import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import TaskCreator from './TaskCreator';
 import TaskList from './TaskList';
-import socket from '../../utils/socket';
+import { Task } from '../../types/task';
 
-interface Task {
-  id: string;
-  title: string;
-  tenantId: string;
-  creatorId: string;
-  creator?: { email: string };
-  assignee?: { email: string };
-  dueDate?: string;
-}
 
 
 interface GroupSectionProps {
   tenantId: string;
   userId?: string;
   tasks: Task[];
+  userEmail?: string;
   onTaskCreated: (task: Task) => void;
+  setTasks: React.Dispatch<React.SetStateAction<Task[]>>;
 }
 
-export default function GroupSection({ tenantId }: GroupSectionProps) {
+export default function GroupSection({ tenantId, userEmail, tasks, setTasks }: GroupSectionProps) {
   const { data: session } = useSession();
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);   
+const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
+  setTasks(prev =>
+    prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t)
+  );
 
-  useEffect(() => {
-    if (!tenantId) return;
+  const res = await fetch('/api/update-task-status', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ taskId, status: newStatus }),
+  });
 
-    socket.emit('joinTenant', tenantId);
+  if (!res.ok) {
+    alert('Failed to update status');
+  }
+};
 
-    const fetchTasks = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch(`/api/get-tasks?tenantId=${tenantId}`);
-        const data = await res.json();
 
-        if (!Array.isArray(data)) {
-          console.error('Unexpected task data:', data);
-          setTasks([]);
-          return;
-        }
-
-        setTasks(data);
-      } catch (err) {
-        console.error('Failed to fetch tasks:', err);
-        setTasks([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTasks();
-
-    const handleTaskCreated = (task: Task) => {
-      if (task.tenantId === tenantId) {
-        setTasks((prev) => [...prev, task]);
-      }
-    };
-
-    const handleTaskUpdated = (updatedTask: Task) => {
-      if (updatedTask.tenantId === tenantId) {
-        setTasks((prev) =>
-          prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-        );
-      }
-    };
-
-    const handleTaskDeleted = (deletedTaskId: string) => {
-      setTasks((prev) => prev.filter((task) => task.id !== deletedTaskId));
-    };
-
-    socket.on('taskCreated', handleTaskCreated);
-    socket.on('taskUpdated', handleTaskUpdated);
-    socket.on('taskDeleted', handleTaskDeleted);
-
-    return () => {
-      socket.off('taskCreated', handleTaskCreated);
-      socket.off('taskUpdated', handleTaskUpdated);
-      socket.off('taskDeleted', handleTaskDeleted);
-    };
-  }, [tenantId]);
 
   return (
     <div>
@@ -92,12 +44,12 @@ export default function GroupSection({ tenantId }: GroupSectionProps) {
       <TaskCreator
         tenantId={tenantId}
         userId={session?.user?.userId}
-        onTaskCreated={(task) => setTasks((prev) => [...prev, task])}
+        onTaskCreated={() => {}}
       />
       {loading ? (
         <p>Loading tasks...</p>
       ) : (
-        <TaskList tasks={tasks}/>
+        <TaskList tasks={tasks} userEmail={userEmail} onStatusChange={handleStatusChange}/>
       )}
     </div>
   );

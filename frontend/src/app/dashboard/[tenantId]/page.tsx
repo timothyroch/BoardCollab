@@ -108,15 +108,17 @@ useEffect(() => {
       )}
 
       {activeTab === 'my-space' && (
-        <MySpaceSection tasks={tasks} userEmail={userEmail ?? undefined} tenantId={tenantId!}/>
+        <MySpaceSection tasks={tasks} userEmail={userEmail ?? undefined} setTasks={setTasks} tenantId={tenantId!}/>
       )}
 
       {activeTab === 'group' && tenantId && (
         <GroupSection
           tenantId={tenantId}
           userId={userId}
+          userEmail={userEmail ?? undefined}
           tasks={tasks}
           onTaskCreated={(task) => setTasks((prev) => [...prev, task])}
+          setTasks={setTasks}
         />
       )}
 

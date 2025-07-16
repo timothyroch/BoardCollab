@@ -13,6 +13,7 @@ interface Task {
   creator?: { email: string };
   assignees?: { email: string }[];
   dueDate?: string;
+  status?: 'to_do' | 'in_progress' | 'done';
 }
 
 interface Comment {
@@ -26,10 +27,20 @@ interface Comment {
 interface TaskListProps {
   tasks: Task[];
   userId?: string;
+  userEmail?: string;
   renderTaskExtras?: (task: Task) => React.ReactNode;
+  onStatusChange?: (taskId: string, newStatus: Task['status']) => void;
+
 }
 
-export default function TaskList({ tasks, renderTaskExtras }: TaskListProps) {
+const STATUS_CYCLE: Task['status'][] = ['to_do', 'in_progress', 'done'];
+
+const getNextStatus = (current: Task['status']): Task['status'] => {
+  const index = STATUS_CYCLE.indexOf(current ?? 'to_do');
+  return STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
+};
+
+export default function TaskList({ tasks, renderTaskExtras, userEmail, onStatusChange }: TaskListProps) {
   if (!tasks.length) {
     return (
       <motion.p
@@ -59,6 +70,52 @@ export default function TaskList({ tasks, renderTaskExtras }: TaskListProps) {
               <span className="font-semibold text-gold-400">Assignee:</span>{' '}
               {task.assignees && task.assignees.length > 0 ? task.assignees.map(a => a.email).join(', ') : 'Unassigned'}
             </p>
+              <p className="text-gray-300">
+                <span className="font-semibold text-gold-400">Status:</span>{' '}
+                {(!task.assignees || task.assignees.some(a => a.email === userEmail)) ? (
+                  <span
+                    onClick={async () => {
+                      const nextStatus = getNextStatus(task.status ?? 'to_do');
+
+                      const res = await fetch('/api/update-task-status', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ taskId: task.id, status: nextStatus }),
+                      });
+
+                      if (res.ok) {
+                        if (onStatusChange) {
+                          onStatusChange(task.id!, nextStatus);
+                          }
+                      } else {
+                        alert('Failed to update status');
+                      }
+                    }}
+                    className={`ml-2 cursor-pointer underline ${
+                      task.status === 'done'
+                        ? 'text-green-400'
+                        : task.status === 'in_progress'
+                        ? 'text-yellow-400'
+                        : 'text-gray-400'
+                    }`}
+                    title="Click to change status"
+                  >
+                    {task.status}
+                  </span>
+                ) : (
+                  <span
+                    className={`ml-2 ${
+                      task.status === 'done'
+                        ? 'text-green-400'
+                        : task.status === 'in_progress'
+                        ? 'text-yellow-400'
+                        : 'text-gray-400'
+                    }`}
+                  >
+                    {task.status}
+                  </span>
+                )}
+              </p>
             <p className="text-gray-300">
               <span className="font-semibold text-gold-400">Due:</span>{' '}
               {task.dueDate ? format(new Date(task.dueDate), 'PPP') : 'N/A'}

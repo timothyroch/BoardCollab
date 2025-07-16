@@ -4,6 +4,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { TasksService } from './tasks.service';
 import { TasksGateway } from './tasks.gateway';
+import { Param, Patch } from '@nestjs/common';
 
 @Controller('tasks')
 export class TasksController {
@@ -45,7 +46,7 @@ export class TasksController {
 
 @Post()
 async createTask(@Body() body: any) {
-  const { title, tenantId, creatorId, dueDate, assigneeEmails } = body;
+  const { title, tenantId, creatorId, dueDate, assigneeEmails, status } = body;
   if (!title || !tenantId || !creatorId || !Array.isArray(assigneeEmails) || assigneeEmails.length === 0) {
     throw new BadRequestException('Missing required fields');
   }
@@ -55,11 +56,24 @@ async createTask(@Body() body: any) {
     creatorId,
     dueDate,
     assigneeEmails,
+    status,
   );
   this.tasksGateway.server
     .to(tenantId)
     .emit('taskCreated', { ...task, tenantId });
   return task;
+}
+
+@Patch(':id/status')
+async updateTaskStatus(
+  @Param('id') taskId: string,
+  @Body('status') status: 'to_do' | 'in_progress' | 'done',
+) {
+  if (!status || !['to_do', 'in_progress', 'done'].includes(status)) {
+    throw new BadRequestException('Invalid status value');
+  }
+
+  return this.tasksService.updateStatus(taskId, status);
 }
 
 

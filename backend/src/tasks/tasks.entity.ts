@@ -42,4 +42,12 @@ export class Task {
 
   @OneToMany(() => Comment, comment => comment.task)
   comments: Comment[];
+
+  @Column({
+  type: 'enum',
+  enum: ['to_do', 'in_progress', 'done'],
+  default: 'to_do',
+})
+status: 'to_do' | 'in_progress' | 'done';
+
 }
