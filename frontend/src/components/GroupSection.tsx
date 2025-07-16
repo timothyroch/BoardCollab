@@ -24,7 +24,7 @@ interface GroupSectionProps {
   onTaskCreated: (task: Task) => void;
 }
 
-export default function GroupSection({ tenantId, userId }: GroupSectionProps) {
+export default function GroupSection({ tenantId }: GroupSectionProps) {
   const { data: session } = useSession();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(false);
@@ -97,7 +97,7 @@ export default function GroupSection({ tenantId, userId }: GroupSectionProps) {
       {loading ? (
         <p>Loading tasks...</p>
       ) : (
-        <TaskList tasks={tasks} />
+        <TaskList tasks={tasks}/>
       )}
     </div>
   );

@@ -6,9 +6,11 @@ import {
   ManyToOne,
   ManyToMany,
   JoinTable,
+  OneToMany
 } from 'typeorm';
 import { User } from '../auth/user.entity';
 import { Tenant } from '../tenants/tenant.entity';
+import { Comment } from '../comments/comment.entity';
 
 @Entity()
 export class Task {
@@ -37,4 +39,7 @@ export class Task {
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Comment, comment => comment.task)
+  comments: Comment[];
 }

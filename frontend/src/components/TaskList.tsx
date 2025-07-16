@@ -2,6 +2,9 @@
 
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
+import TaskComments from './TaskComments';
+import { useSession } from 'next-auth/react';
+
 
 interface Task {
   id?: string;
@@ -12,8 +15,17 @@ interface Task {
   dueDate?: string;
 }
 
+interface Comment {
+  id: string;
+  content: string;
+  user: { email: string };
+  created_at: string;
+}
+
+
 interface TaskListProps {
   tasks: Task[];
+  userId?: string;
 }
 
 export default function TaskList({ tasks }: TaskListProps) {
@@ -55,6 +67,7 @@ export default function TaskList({ tasks }: TaskListProps) {
               {task.creator?.email ?? 'Unknown'}
             </p>
           </div>
+          <TaskComments taskId={task.id!}/>
         </motion.li>
       ))}
     </ul>

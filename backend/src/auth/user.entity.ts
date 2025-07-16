@@ -1,6 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToMany, JoinTable, OneToMany } from 'typeorm';
 import { Tenant } from 'src/tenants/tenant.entity';
 import { Invite } from '../invites/invite.entity';
+import { Comment } from '../comments/comment.entity';
 
 
 @Entity()
@@ -23,4 +24,7 @@ export class User {
 
 @OneToMany(() => Invite, invite => invite.inviter)
 invitesSent: Invite[];
+
+@OneToMany(() => Comment, comment => comment.user)
+comments: Comment[];
 }

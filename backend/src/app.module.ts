@@ -11,6 +11,7 @@ import { TenantsModule } from './tenants/tenants.module';
 import { Invite } from './invites/invite.entity';
 import { InvitesModule } from './invites/invites.module';
 import { UsersModule } from './users/users.module';
+import { CommentsModule } from './comments/comments.module';
 
 
 
@@ -36,6 +37,7 @@ import { UsersModule } from './users/users.module';
     TenantsModule,
     InvitesModule,
     UsersModule,
+    CommentsModule,
   ],
   controllers: [],
   providers: [],
