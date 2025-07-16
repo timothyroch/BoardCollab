@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback } from 'react';
+import Button from './ui/Button';
 
 interface Task {
   id: string;
@@ -73,12 +74,11 @@ const handleSync = useCallback(async (task: Task) => {
               <p className="text-sm text-gray-400">
                 Created by: {task.creator?.email || 'Unknown'}
               </p>
-               <button
-                className="mt-2 px-3 py-1 text-sm bg-blue-600 text-white rounded"
+               <Button
                 onClick={() => handleSync(task)}
               >
                 Sync to Google Calendar
-              </button>
+              </Button>
             </li>
           ))}
         </ul>

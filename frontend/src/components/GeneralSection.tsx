@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Button from './ui/Button';
+import Input from './ui/input';
 
 interface GeneralSectionProps {
   tenantId: string;
@@ -51,19 +53,17 @@ export default function GeneralSection({
   return (
     <div className="border p-4 rounded max-w-md">
       <h3 className="text-lg font-semibold mb-2">Invite User to Workspace</h3>
-      <input
+      <Input
         type="email"
         placeholder="Enter user's email"
-        className="border p-2 rounded w-full mb-2"
         value={inviteEmail}
         onChange={(e) => onInviteEmailChange(e.target.value)}
       />
-      <button
-        className="bg-blue-600 text-white px-4 py-2 rounded w-full"
+      <Button
         onClick={onSendInvite}
       >
         Send Invite
-      </button>
+      </Button>
       {inviteError && <p className="text-red-600 text-sm mt-2">{inviteError}</p>}
       {inviteSuccess && <p className="text-green-600 text-sm mt-2">{inviteSuccess}</p>}
       <div className="mt-6">
