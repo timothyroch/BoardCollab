@@ -2,9 +2,10 @@
 
 import { useCallback } from 'react';
 import Button from './ui/Button';
+import TaskList from './TaskList';
 
 interface Task {
-  id: string;
+  id?: string;
   title: string;
   tenantId: string;
   creator?: { email: string };
@@ -49,7 +50,7 @@ const handleSync = useCallback(async (task: Task) => {
   } else {
     alert('Task synced to Google Calendar');
   }
-}, []);
+}, [tenantId]);
 
 
   return (
@@ -59,30 +60,15 @@ const handleSync = useCallback(async (task: Task) => {
         You have {assignedTasks.length} task{assignedTasks.length !== 1 ? 's' : ''} assigned to you.
       </p>
 
-      {assignedTasks.length === 0 ? (
-        <p className="text-gray-500">No tasks assigned to you.</p>
-      ) : (
-        <ul className="space-y-2">
-          {assignedTasks.map((task) => (
-            <li key={task.id} className="p-3 border rounded shadow-sm">
-              <p className="font-medium">{task.title}</p>
-              {task.dueDate && (
-                <p className="text-sm text-gray-500">
-                  Due: {new Date(task.dueDate).toLocaleDateString()}
-                </p>
-              )}
-              <p className="text-sm text-gray-400">
-                Created by: {task.creator?.email || 'Unknown'}
-              </p>
-               <Button
-                onClick={() => handleSync(task)}
-              >
-                Sync to Google Calendar
-              </Button>
-            </li>
-          ))}
-        </ul>
-      )}
+  
+      <TaskList
+        tasks={assignedTasks}
+        renderTaskExtras={(task) => (
+          <Button onClick={() => handleSync(task)}>
+            Sync to Google Calendar
+          </Button>
+        )}
+      />
     </div>
   );
 }

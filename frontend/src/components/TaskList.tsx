@@ -26,9 +26,10 @@ interface Comment {
 interface TaskListProps {
   tasks: Task[];
   userId?: string;
+  renderTaskExtras?: (task: Task) => React.ReactNode;
 }
 
-export default function TaskList({ tasks }: TaskListProps) {
+export default function TaskList({ tasks, renderTaskExtras }: TaskListProps) {
   if (!tasks.length) {
     return (
       <motion.p
@@ -67,6 +68,11 @@ export default function TaskList({ tasks }: TaskListProps) {
               {task.creator?.email ?? 'Unknown'}
             </p>
           </div>
+              {renderTaskExtras && (
+             <div className="mt-2">
+               {renderTaskExtras(task)}
+              </div>
+              )}
           <TaskComments taskId={task.id!}/>
         </motion.li>
       ))}
