@@ -69,4 +69,15 @@ async createTask(title: string,
   return this.taskRepository.save(task);
 }
 
+async getTaskById(taskId: string): Promise<Task | null> {
+  return this.taskRepository.findOne({
+    where: { id: taskId },
+    relations: ['creator', 'tenant'],
+  });
+}
+
+async deleteTask(taskId: string): Promise<void> {
+  await this.taskRepository.delete({ id: taskId });
+}
+
 }

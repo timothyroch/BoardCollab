@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards, Request, Query, Post, Body, BadRequestException } from '@nestjs/common';
+import { Controller, Get, UseGuards, Request, Query, Post, Body, BadRequestException, Delete, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -75,6 +75,21 @@ async updateTaskStatus(
 
   return this.tasksService.updateStatus(taskId, status);
 }
+@Roles('admin', 'member')
+@Delete(':id')
+async deleteTask(@Param('id') taskId: string) {
+  const task = await this.tasksService.getTaskById(taskId);
+  if (!task) {
+    throw new NotFoundException('Task not found');
+  }
+
+  await this.tasksService.deleteTask(taskId);
+
+  this.tasksGateway.server.to(task.tenant.id).emit('taskDeleted', taskId);
+
+  return { message: 'Task deleted successfully' };
+}
+
 
 
 }

@@ -3,18 +3,12 @@
 import { format } from 'date-fns';
 import { motion } from 'framer-motion';
 import TaskComments from './TaskComments';
+import { Task } from '../../types/task';
 import { useSession } from 'next-auth/react';
+import { useState } from 'react';
 
 
-interface Task {
-  id?: string;
-  title: string;
-  tenantId: string;
-  creator?: { email: string };
-  assignees?: { email: string }[];
-  dueDate?: string;
-  status?: 'to_do' | 'in_progress' | 'done';
-}
+
 
 interface Comment {
   id: string;
@@ -35,12 +29,18 @@ interface TaskListProps {
 
 const STATUS_CYCLE: Task['status'][] = ['to_do', 'in_progress', 'done'];
 
-const getNextStatus = (current: Task['status']): Task['status'] => {
+
+
+export default function TaskList({ tasks: initialTasks, renderTaskExtras, userEmail, userId, onStatusChange }: TaskListProps) {
+  const { data: session } = useSession();
+   const [tasks, setTasks] = useState<Task[]>(initialTasks);
+  
+const currentUserId = session?.user?.userId;
+
+  const getNextStatus = (current: Task['status']): Task['status'] => {
   const index = STATUS_CYCLE.indexOf(current ?? 'to_do');
   return STATUS_CYCLE[(index + 1) % STATUS_CYCLE.length];
 };
-
-export default function TaskList({ tasks, renderTaskExtras, userEmail, onStatusChange }: TaskListProps) {
   if (!tasks.length) {
     return (
       <motion.p
@@ -53,6 +53,25 @@ export default function TaskList({ tasks, renderTaskExtras, userEmail, onStatusC
       </motion.p>
     );
   }
+  const handleDelete = async (taskId: string) => {
+  const confirmed = confirm('Are you sure you want to delete this task?');
+  if (!confirmed) return;
+
+  const res = await fetch('/api/delete-task', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ taskId }),
+  });
+
+  if (res.ok) {
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+    alert('Task deleted');
+  } else {
+    const data = await res.json();
+    alert(data.message || 'Failed to delete task');
+  }
+};
+
 
   return (
     <ul className="space-y-4 p-4 max-w-2xl mx-auto">
@@ -130,6 +149,16 @@ export default function TaskList({ tasks, renderTaskExtras, userEmail, onStatusC
                {renderTaskExtras(task)}
               </div>
               )}
+            {task.creator?.id === currentUserId && (
+              <button
+                onClick={() => handleDelete(task.id)}
+                className="mt-2 text-sm text-red-500 underline hover:text-red-700"
+              >
+                Delete Task
+              </button>
+            )}
+
+
           <TaskComments taskId={task.id!}/>
         </motion.li>
       ))}

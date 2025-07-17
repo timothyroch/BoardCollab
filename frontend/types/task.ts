@@ -3,7 +3,9 @@ export interface Task {
   title: string;
   tenantId: string;
   creatorId: string;
-  creator?: { email: string };
+  creator?: { 
+    id?: string;
+    email: string };
   assignees?: { email: string }[];
   dueDate?: string;
   status?: 'to_do' | 'in_progress' | 'done';
