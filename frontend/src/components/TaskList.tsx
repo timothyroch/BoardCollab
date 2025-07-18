@@ -5,8 +5,6 @@ import { motion } from 'framer-motion';
 import TaskComments from './TaskComments';
 import { Task } from '../../types/task';
 import { useSession } from 'next-auth/react';
-import { useState } from 'react';
-
 
 
 
@@ -24,6 +22,7 @@ interface TaskListProps {
   userEmail?: string;
   renderTaskExtras?: (task: Task) => React.ReactNode;
   onStatusChange?: (taskId: string, newStatus: Task['status']) => void;
+  onDeleteTask?: (taskId: string) => void;
 
 }
 
@@ -31,9 +30,8 @@ const STATUS_CYCLE: Task['status'][] = ['to_do', 'in_progress', 'done'];
 
 
 
-export default function TaskList({ tasks: initialTasks, renderTaskExtras, userEmail, userId, onStatusChange }: TaskListProps) {
+export default function TaskList({ tasks, renderTaskExtras, userEmail, userId, onStatusChange, onDeleteTask = () => {}  }: TaskListProps) {
   const { data: session } = useSession();
-   const [tasks, setTasks] = useState<Task[]>(initialTasks);
   
 const currentUserId = session?.user?.userId;
 
@@ -53,24 +51,24 @@ const currentUserId = session?.user?.userId;
       </motion.p>
     );
   }
-  const handleDelete = async (taskId: string) => {
-  const confirmed = confirm('Are you sure you want to delete this task?');
-  if (!confirmed) return;
 
-  const res = await fetch('/api/delete-task', {
-    method: 'DELETE',
+const handleStatusChange = async (task: Task) => {
+  const nextStatus = getNextStatus(task.status ?? 'to_do');
+  const res = await fetch('/api/update-task-status', {
+    method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ taskId }),
+    body: JSON.stringify({ taskId: task.id, status: nextStatus }),
   });
 
   if (res.ok) {
-    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
-    alert('Task deleted');
+    if (onStatusChange) {
+      onStatusChange(task.id, nextStatus);
+    }
   } else {
-    const data = await res.json();
-    alert(data.message || 'Failed to delete task');
+    alert('Failed to update status');
   }
 };
+
 
 
   return (
@@ -93,23 +91,7 @@ const currentUserId = session?.user?.userId;
                 <span className="font-semibold text-gold-400">Status:</span>{' '}
                 {(!task.assignees || task.assignees.some(a => a.email === userEmail)) ? (
                   <span
-                    onClick={async () => {
-                      const nextStatus = getNextStatus(task.status ?? 'to_do');
-
-                      const res = await fetch('/api/update-task-status', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ taskId: task.id, status: nextStatus }),
-                      });
-
-                      if (res.ok) {
-                        if (onStatusChange) {
-                          onStatusChange(task.id!, nextStatus);
-                          }
-                      } else {
-                        alert('Failed to update status');
-                      }
-                    }}
+                    onClick={async () => handleStatusChange(task)}
                     className={`ml-2 cursor-pointer underline ${
                       task.status === 'done'
                         ? 'text-green-400'
@@ -151,7 +133,7 @@ const currentUserId = session?.user?.userId;
               )}
             {task.creator?.id === currentUserId && (
               <button
-                onClick={() => handleDelete(task.id)}
+                onClick={() => onDeleteTask(task.id)}
                 className="mt-2 text-sm text-red-500 underline hover:text-red-700"
               >
                 Delete Task

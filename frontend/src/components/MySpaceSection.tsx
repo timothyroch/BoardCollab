@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState, useEffect } from 'react';
+import { useCallback, useState, useEffect, useRef } from 'react';
 import Button from './ui/Button';
 import TaskList from './TaskList';
 import FullCalendar from '@fullcalendar/react';
@@ -17,7 +17,7 @@ interface MySpaceSectionProps {
 }
 
 export default function MySpaceSection({ tasks, setTasks, userEmail, tenantId }: MySpaceSectionProps) {
-
+const calendarRef = useRef<any>(null);
 const handleStatusChange = async (taskId: string, newStatus: Task['status']) => {
   setTasks(prev =>
     prev.map(t => t.id === taskId ? { ...t, status: newStatus } : t)
@@ -92,6 +92,36 @@ const handleSync = useCallback(async (task: Task) => {
 
 
 
+  const handleDelete = async (taskId: string) => {
+  const confirmed = confirm('Are you sure you want to delete this task?');
+  if (!confirmed) return;
+
+  const res = await fetch('/api/delete-task', {
+    method: 'DELETE',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ taskId }),
+  });
+
+  if (res.ok) {
+    // Remove task from state
+    setTasks((prevTasks) => prevTasks.filter((task) => task.id !== taskId));
+
+    // Remove corresponding event from FullCalendar
+    if (calendarRef.current) {
+      const calendarApi = calendarRef.current.getApi();
+      const eventToRemove = calendarApi.getEvents().find((event: any) => event.id === taskId);
+      if (eventToRemove) {
+        eventToRemove.remove();  // Remove the event from FullCalendar
+      }
+    }
+
+    alert('Task deleted');
+  } else {
+    const data = await res.json();
+    alert(data.message || 'Failed to delete task');
+  }
+};
+
   return (
     <div>
       <h2 className="text-xl font-semibold mb-4">My Assigned Tasks</h2>
@@ -122,6 +152,7 @@ const handleSync = useCallback(async (task: Task) => {
             Sync to Google Calendar
           </Button>
         )}
+        onDeleteTask={handleDelete}
       />
     </div>
   );

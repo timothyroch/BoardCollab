@@ -84,6 +84,12 @@ function TaskComments({ taskId }: TaskCommentsProps) {
           id="title"
           value={newComment}
           onChange={(e) => setNewComment(e.target.value)}
+          onKeyDown={(e) => {
+          if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+        handleSubmit();
+      }
+    }}
           placeholder="Add a comment..."
         />
       <Button onClick={handleSubmit}>
