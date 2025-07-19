@@ -1,0 +1,10 @@
+FROM node:18
+
+WORKDIR /app
+
+COPY package*.json ./
+
+RUN npm install
+
+# Don't copy source; it's mounted
+CMD ["npm", "run", "dev"]

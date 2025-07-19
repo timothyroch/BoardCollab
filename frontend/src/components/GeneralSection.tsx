@@ -3,6 +3,8 @@
 import { useEffect, useState } from 'react';
 import Button from './ui/Button';
 import Input from './ui/input';
+import { useSession } from 'next-auth/react';
+
 
 interface GeneralSectionProps {
   tenantId: string;
@@ -27,6 +29,7 @@ export default function GeneralSection({
   inviteError,
   inviteSuccess,
 }: GeneralSectionProps) {
+      const { data: session } = useSession();
       const [users, setUsers] = useState<User[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(false);
 
@@ -82,6 +85,33 @@ export default function GeneralSection({
           </ul>
         )}
       </div>
+      <Button
+  onClick={async () => {
+    const confirmed = confirm('Are you sure you want to leave this workspace?');
+    if (!confirmed) return;
+
+    const res = await fetch('/api/leave-group', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        tenantId,
+        userId: session?.user?.userId, // or however you retrieve userId
+      }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert('You have left the group.');
+      window.location.href = '/dashboard'; // or home
+    } else {
+      alert(data.message || 'Failed to leave the group.');
+    }
+  }}
+>
+  Leave Group
+</Button>
+
     </div>
   );
 }

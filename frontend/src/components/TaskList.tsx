@@ -131,7 +131,7 @@ const handleStatusChange = async (task: Task) => {
                {renderTaskExtras(task)}
               </div>
               )}
-            {task.creator?.id === currentUserId && (
+            {task.creator?.id && (
               <button
                 onClick={() => onDeleteTask(task.id)}
                 className="mt-2 text-sm text-red-500 underline hover:text-red-700"

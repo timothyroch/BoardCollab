@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Get, Query } from '@nestjs/common';
+import { Body, Controller, Post, Get, Query, Delete, Param } from '@nestjs/common';
 import { TenantsService } from './tenants.service';
 
 @Controller('tenants')
@@ -13,5 +13,13 @@ export class TenantsController {
   @Get()
   async getTenantsForUser(@Query('userId') userId: string) {
     return this.tenantsService.getTenantsForUser(userId);
+  }
+   @Delete(':tenantId/users/:userId')
+  async removeUserFromTenant(
+    @Param('tenantId') tenantId: string,
+    @Param('userId') userId: string,
+  ) {
+    await this.tenantsService.removeUserFromTenant(userId, tenantId);
+    return { message: 'User removed from tenant' };
   }
 }
