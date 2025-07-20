@@ -58,4 +58,11 @@ export class TasksGateway {
 
     console.log(`Task created for tenant ${tenantId}:`, savedTask);
   }
+  @SubscribeMessage('addComment')
+handleAddComment(@MessageBody() data: any, @ConnectedSocket() client: Socket): void {
+  const { tenantId, comment } = data;
+  if (!tenantId || !comment) return;
+  this.server.to(tenantId).emit('commentAdded', comment);
+}
+
 }

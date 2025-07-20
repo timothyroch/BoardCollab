@@ -5,9 +5,12 @@ import { CommentsService } from './comments.service';
 import { CommentsController } from './comments.controller';
 import { User } from '../auth/user.entity';
 import { Task } from '../tasks/tasks.entity';
+import { TasksModule } from 'src/tasks/tasks.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Comment, User, Task])],
+  imports: [TypeOrmModule.forFeature([Comment, User, Task]),
+  TasksModule,
+],
   providers: [CommentsService],
   controllers: [CommentsController],
   exports: [CommentsService],

@@ -73,7 +73,15 @@ async updateTaskStatus(
     throw new BadRequestException('Invalid status value');
   }
 
-  return this.tasksService.updateStatus(taskId, status);
+  const updatedTask = await this.tasksService.updateStatus(taskId, status);
+
+this.tasksGateway.server.to(updatedTask.tenant.id).emit('taskUpdated', {
+  ...updatedTask,
+  tenantId: updatedTask.tenant.id,
+});
+
+return updatedTask;
+
 }
 @Roles('admin', 'member')
 @Delete(':id')

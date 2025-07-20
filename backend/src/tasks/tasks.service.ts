@@ -59,7 +59,7 @@ async createTask(title: string,
   }
 
   async updateStatus(taskId: string, status: 'to_do' | 'in_progress' | 'done'): Promise<Task> {
-  const task = await this.taskRepository.findOne({ where: { id: taskId } });
+  const task = await this.taskRepository.findOne({ where: { id: taskId }, relations: ['tenant', 'assignees'],  });
 
   if (!task) {
     throw new Error('Task not found');

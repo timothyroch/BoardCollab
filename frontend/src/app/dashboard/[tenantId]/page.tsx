@@ -2,22 +2,15 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import socket from '../../../../utils/socket';
+import socket, { joinTenantRoom } from '../../../../utils/socket';
 import { useSession } from 'next-auth/react';
 import HeaderSelector from '@/components/HeaderSelector';
 import GeneralSection from '@/components/GeneralSection';
 import MySpaceSection from '@/components/MySpaceSection';
 import GroupSection from '@/components/GroupSection';
+import { Task } from '../../../../types/task';
 
-interface Task {
-  id: string;
-  title: string;
-  tenantId: string;
-  creatorId: string;
-  creator?: { email: string };
-  assignees?: { email: string }[];
-  dueDate?: string;
-}
+
 
 export default function TenantDashboard() {
   const params = useParams();
@@ -90,6 +83,37 @@ useEffect(() => {
   fetchTasks();
 }, [tenantId]);
 
+useEffect(() => {
+  if (!tenantId) return;
+
+  joinTenantRoom(tenantId);
+
+  socket.on('taskCreated', (task: Task) => {
+    if (task.tenantId === tenantId) {
+      setTasks((prev) => [task, ...prev]);
+    }
+  });
+
+  socket.on('taskUpdated', (updatedTask: Task) => {
+    if (updatedTask.tenantId === tenantId) {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === updatedTask.id ? updatedTask : task
+        )
+      );
+    }
+  });
+
+  socket.on('taskDeleted', (deletedTaskId: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== deletedTaskId));
+  });
+
+  return () => {
+    socket.off('taskCreated');
+    socket.off('taskUpdated');
+    socket.off('taskDeleted');
+  };
+}, [tenantId]);
 
 
   return (

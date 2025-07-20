@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import Button from './ui/Button';
 import Input from './ui/input';
 import { Label } from './ui/label';
+import socket from '../../utils/socket';
 
 interface Comment {
   id: string;
@@ -36,6 +37,22 @@ function TaskComments({ taskId }: TaskCommentsProps) {
     };
 
     fetchComments();
+      const handleNewComment = (comment: Comment & { taskId: string; tenantId: string }) => {
+    if (comment.taskId === taskId) {
+      setComments((prev) => [...prev, comment]);
+    }
+  };
+
+  socket.on('commentAdded', handleNewComment);
+
+  const tenantId = sessionStorage.getItem('tenantId'); // Make sure tenantId is stored at login
+  if (tenantId) {
+    socket.emit('joinRoom', tenantId);
+  }
+
+  return () => {
+    socket.off('commentAdded', handleNewComment);
+  };
   }, [taskId]);
 
   const handleSubmit = async () => {
@@ -52,8 +69,6 @@ function TaskComments({ taskId }: TaskCommentsProps) {
 
       if (!res.ok) throw new Error('Failed to post comment');
 
-      const added = await res.json();
-      setComments((prev) => [...prev, added]);
       setNewComment('');
     } catch (error) {
       console.error(error);

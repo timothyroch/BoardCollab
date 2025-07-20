@@ -72,7 +72,6 @@ const handleStatusChange = async (taskId: string, newStatus: Task['status']) => 
       <TaskCreator
         tenantId={tenantId}
         userId={session?.user?.userId}
-        onTaskCreated={(newTask) => {setTasks(prev => [newTask, ...prev]);}}
       />
       {loading ? (
         <p>Loading tasks...</p>
