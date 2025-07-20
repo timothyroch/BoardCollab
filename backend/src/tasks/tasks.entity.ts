@@ -1,4 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  CreateDateColumn,
+  ManyToOne,
+  ManyToMany,
+  JoinTable,
+  OneToMany
+} from 'typeorm';
+import { User } from '../auth/user.entity';
+import { Tenant } from '../tenants/tenant.entity';
+import { Comment } from '../comments/comment.entity';
 
 @Entity()
 export class Task {
@@ -8,9 +20,34 @@ export class Task {
   @Column()
   title: string;
 
-  @Column()
-  tenantId: string;
+  @Column({ nullable: true })
+  description: string;
+
+  @ManyToOne(() => User, { nullable: true })
+  creator: User;
+
+  @ManyToMany(() => User)
+  @JoinTable()
+  assignees: User[];
+
+
+  @ManyToOne(() => Tenant)
+  tenant: Tenant;
+
+  @Column({ type: 'date', nullable: true })
+  dueDate: Date;
 
   @CreateDateColumn()
   createdAt: Date;
+
+  @OneToMany(() => Comment, comment => comment.task)
+  comments: Comment[];
+
+  @Column({
+  type: 'enum',
+  enum: ['to_do', 'in_progress', 'done'],
+  default: 'to_do',
+})
+status: 'to_do' | 'in_progress' | 'done';
+
 }

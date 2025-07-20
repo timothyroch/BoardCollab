@@ -7,10 +7,11 @@ import { JwtStrategy } from './jwt.strategy';
 import { User } from './user.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Tenant } from '../tenants/tenant.entity';
+import { Invite } from '../invites/invite.entity';
 
 @Module({
     imports: [
-    TypeOrmModule.forFeature([User, Tenant]), 
+    TypeOrmModule.forFeature([User, Tenant, Invite]), 
     PassportModule,  // Enables use of AuthGuard('jwt')
     JwtModule.register({
       secret: process.env.JWT_SECRET,  

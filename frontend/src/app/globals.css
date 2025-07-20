@@ -24,3 +24,40 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.fc-wrapper {
+  font-family: sans-serif;
+  color: #fff;
+}
+
+.fc .fc-toolbar-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.fc .fc-button {
+  border: none;
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.fc .fc-button:hover {
+  background-color: #374151;
+}
+
+.fc .fc-button-primary:not(:disabled).fc-button-active,
+.fc .fc-button-primary:not(:disabled):active {
+  color: #fff;
+}
+.fc .fc-col-header-cell {
+  background-color: var(--background);
+  color: #f9fafb;            
+  font-weight: 600;
+  padding: 0.5rem;
+  text-align: center;
+  border: 1px solid #374151; 
+}
+

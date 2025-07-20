@@ -2,13 +2,15 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import socket from '../../../../utils/socket';
+import socket, { joinTenantRoom } from '../../../../utils/socket';
+import { useSession } from 'next-auth/react';
+import HeaderSelector from '@/components/HeaderSelector';
+import GeneralSection from '@/components/GeneralSection';
+import MySpaceSection from '@/components/MySpaceSection';
+import GroupSection from '@/components/GroupSection';
+import { Task } from '../../../../types/task';
 
-interface Task {
-  id: string;
-  title: string;
-  tenantId: string;
-}
+
 
 export default function TenantDashboard() {
   const params = useParams();
@@ -17,101 +19,134 @@ export default function TenantDashboard() {
     : Array.isArray(params?.['tenantId'])
       ? params['tenantId'][0]
       : undefined;
+  const [activeTab, setActiveTab] = useState<'general' | 'my-space' | 'group'>('general');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteError, setInviteError] = useState('');
+  const [inviteSuccess, setInviteSuccess] = useState('');
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const { data: session } = useSession();
 
-  useEffect(() => {
-    if (!tenantId) return;
+const userId = session?.user?.userId;
+const userEmail = session?.user?.email;
 
-    socket.emit('joinTenant', tenantId);
 
-const fetchTasks = async () => {
+    const sendInvite = async () => {
+  setInviteError('');
+  setInviteSuccess('');
+
+  if (!inviteEmail.trim()) {
+    setInviteError('Please enter a valid email');
+    return;
+  }
+
   try {
-    const res = await fetch(`/api/get-tasks?tenantId=${tenantId}`);
+    const res = await fetch('/api/send-invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: inviteEmail,
+        tenantId,
+        inviterId: session?.user?.userId, 
+      }),
+    });
+
     const data = await res.json();
 
-    if (!Array.isArray(data)) {
-      console.error('Unexpected task data:', data);
-      setTasks([]);
-      return;
+    if (!res.ok) {
+      setInviteError(data.message || 'Failed to send invite');
+    } else {
+      setInviteSuccess('Invite sent');
+      setInviteEmail('');
     }
-
-    setTasks(data);
   } catch (err) {
-    console.error('Failed to fetch tasks:', err);
-    setTasks([]); 
+    setInviteError('Network error');
   }
 };
 
+useEffect(() => {
+  if (!tenantId) return;
 
-
-    fetchTasks();
-
-    socket.on('taskCreated', (task: Task) => {
-      if (task.tenantId === tenantId) {
-        setTasks((prev) => [...prev, task]);
+  const fetchTasks = async () => {
+    try {
+      const res = await fetch(`/api/get-tasks?tenantId=${tenantId}`);
+      const data = await res.json();
+      if (Array.isArray(data)) {
+        setTasks(data);
+      } else {
+        console.error('Unexpected tasks response:', data);
       }
-    });
-
-    socket.on('taskUpdated', (updatedTask: Task) => {
-      if (updatedTask.tenantId === tenantId) {
-        setTasks((prev) =>
-          prev.map((task) => (task.id === updatedTask.id ? updatedTask : task))
-        );
-      }
-    });
-
-    socket.on('taskDeleted', (deletedTaskId: string) => {
-      setTasks((prev) => prev.filter((task) => task.id !== deletedTaskId));
-    });
-
-    return () => {
-      socket.off('taskCreated');
-      socket.off('taskUpdated');
-      socket.off('taskDeleted');
-    };
-  }, [tenantId]);
-
-  const createTask = () => {
-    if (!newTaskTitle) return;
-
-    const task: Task = {
-      id: crypto.randomUUID(),
-      title: newTaskTitle,
-      tenantId: tenantId as string,
-    };
-
-    socket.emit('createTask', { tenantId, task });
-    setNewTaskTitle('');
+    } catch (err) {
+      console.error('Failed to fetch tasks:', err);
+    }
   };
+
+  fetchTasks();
+}, [tenantId]);
+
+useEffect(() => {
+  if (!tenantId) return;
+
+  joinTenantRoom(tenantId);
+
+  socket.on('taskCreated', (task: Task) => {
+    if (task.tenantId === tenantId) {
+      setTasks((prev) => [task, ...prev]);
+    }
+  });
+
+  socket.on('taskUpdated', (updatedTask: Task) => {
+    if (updatedTask.tenantId === tenantId) {
+      setTasks((prev) =>
+        prev.map((task) =>
+          task.id === updatedTask.id ? updatedTask : task
+        )
+      );
+    }
+  });
+
+  socket.on('taskDeleted', (deletedTaskId: string) => {
+    setTasks((prev) => prev.filter((task) => task.id !== deletedTaskId));
+  });
+
+  return () => {
+    socket.off('taskCreated');
+    socket.off('taskUpdated');
+    socket.off('taskDeleted');
+  };
+}, [tenantId]);
+
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Workspace: {tenantId}</h1>
-      
-      <div className="mb-4">
-        <input
-          type="text"
-          value={newTaskTitle}
-          onChange={(e) => setNewTaskTitle(e.target.value)}
-          placeholder="Enter task title"
-          className="border p-2 mr-2 rounded"
-        />
-        <button
-          onClick={createTask}
-          className="bg-blue-600 text-white px-4 py-2 rounded"
-        >
-          Add Task
-        </button>
-      </div>
+      <HeaderSelector activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <ul className="space-y-2">
-        {tasks.map((task) => (
-          <li key={task.id} className="p-2 border rounded">
-            {task.title}
-          </li>
-        ))}
-      </ul>
+      {activeTab === 'general' && tenantId && (
+        <GeneralSection
+          tenantId={tenantId}
+          inviteEmail={inviteEmail}
+          onInviteEmailChange={setInviteEmail}
+          onSendInvite={sendInvite}
+          inviteError={inviteError}
+          inviteSuccess={inviteSuccess}
+        />
+      )}
+
+      {activeTab === 'my-space' && (
+        <MySpaceSection tasks={tasks} userEmail={userEmail ?? undefined} setTasks={setTasks} tenantId={tenantId!}/>
+      )}
+
+      {activeTab === 'group' && tenantId && (
+        <GroupSection
+          tenantId={tenantId}
+          userId={userId}
+          userEmail={userEmail ?? undefined}
+          tasks={tasks}
+          onTaskCreated={(task) => setTasks((prev) => [...prev, task])}
+          setTasks={setTasks}
+        />
+      )}
+
+
     </div>
   );
 }

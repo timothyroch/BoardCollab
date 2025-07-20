@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Tenant } from './tenant.entity';
 import { User } from '../auth/user.entity';
 import { Repository } from 'typeorm';
+import { Task } from 'src/tasks/tasks.entity';
 
 @Injectable()
 export class TenantsService {
@@ -34,6 +35,17 @@ return await this.tenantRepo.save(tenant);
       .where('member.id = :userId', { userId })
       .getMany();
   }
+
+  async removeUserFromTenant(userId: string, tenantId: string): Promise<void> {
+  const user = await this.userRepo.findOne({
+    where: { id: userId },
+    relations: ['tenants'],
+  });
+
+  if (!user) throw new Error('User not found');
+
+}
+
 }
 
 

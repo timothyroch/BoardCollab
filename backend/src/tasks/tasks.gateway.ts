@@ -49,9 +49,20 @@ export class TasksGateway {
 
     if (!tenantId || !task?.title) return;
 
-    const savedTask = await this.tasksService.createTask(task.title, tenantId);
+    const savedTask = await this.tasksService.createTask(task.title, tenantId, task.creatorId, task.dueDate ?? null, task.assigneeEmails ?? []);
 
-    this.server.to(tenantId).emit('taskCreated', savedTask);
+    this.server.to(tenantId).emit('taskCreated', {
+  ...savedTask,
+  tenantId,
+});
+
     console.log(`Task created for tenant ${tenantId}:`, savedTask);
   }
+  @SubscribeMessage('addComment')
+handleAddComment(@MessageBody() data: any, @ConnectedSocket() client: Socket): void {
+  const { tenantId, comment } = data;
+  if (!tenantId || !comment) return;
+  this.server.to(tenantId).emit('commentAdded', comment);
+}
+
 }

@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './user.entity';
-import { Tenant } from '../tenants/tenant.entity'; // Adjust the import path as needed
+import { Tenant } from '../tenants/tenant.entity'; 
+import { Invite } from '../invites/invite.entity'; 
 
 @Injectable()
 export class AuthService {
@@ -11,34 +12,44 @@ export class AuthService {
     private readonly userRepository: Repository<User>,
     @InjectRepository(Tenant)
     private readonly tenantRepository: Repository<Tenant>,
+    @InjectRepository(Invite)
+    private readonly inviteRepo: Repository<Invite>,
   ) {}
 
-  async resolveUser(data: { email: string; name?: string; image?: string }) {
-    let user = await this.userRepository.findOne({
-      where: { email: data.email },
-      relations: ['tenants'], // preload memberships
+async resolveUser(data: { email: string; name?: string; image?: string }) {
+  let user = await this.userRepository.findOne({
+    where: { email: data.email },
+    relations: ['tenants'],
+  });
+
+  if (!user) {
+    const pendingInvite = await this.inviteRepo.findOne({
+      where: { email: data.email, status: 'pending' },
+      relations: ['tenant'],
+      order: { createdAt: 'DESC' },
     });
 
-    if (!user) {
-            // Create new tenant
-    const tenant = this.tenantRepository.create({
-      name: `${data.name || 'Personal'} Workspace`,
-    });
-    await this.tenantRepository.save(tenant);
-
-      user = this.userRepository.create({
-        email: data.email,
-        name: data.name,
-        image: data.image,
-        tenants: [tenant],
-      });
-
-      await this.userRepository.save(user);
+    if (!pendingInvite) {
+      throw new Error('User not invited');
     }
 
-    return {
-      userId: user.id,
-      tenants: user.tenants.map(t => ({ id: t.id, name: t.name })),
-    };
+    pendingInvite.status = 'accepted';
+    await this.inviteRepo.save(pendingInvite);
+
+    user = this.userRepository.create({
+      email: data.email,
+      name: data.name,
+      image: data.image,
+      tenants: [pendingInvite.tenant],
+    });
+
+    await this.userRepository.save(user);
   }
+
+  return {
+    userId: user.id,
+    tenants: user.tenants.map(t => ({ id: t.id, name: t.name })),
+  };
+}
+
 }
