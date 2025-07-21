@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import TaskCreator from './TaskCreator';
 import TaskList from './TaskList';
 import { Task } from '../../types/task';
+import Button from './ui/Button';
 
 
 
@@ -36,7 +37,9 @@ const handleStatusChange = async (taskId: string, newStatus: Task['status']) => 
     alert('Failed to update status');
   }
 };
-
+const handleGithubSync = () => {
+  window.location.href = '/api/github-auth';
+};
 
 
   const handleDelete = async (taskId: string) => {
@@ -66,8 +69,15 @@ const handleStatusChange = async (taskId: string, newStatus: Task['status']) => 
     alert(data.message || 'Failed to delete task');
   }
 };
+
   return (
     <div>
+      <Button
+    onClick={handleGithubSync}
+    className="px-4 py-2 bg-black text-white rounded hover:bg-gray-800"
+  >
+    Sync GitHub
+  </Button>
       <h2 className="text-xl font-semibold mb-4">Group Tasks</h2>
       <TaskCreator
         tenantId={tenantId}
