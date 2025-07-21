@@ -38,7 +38,11 @@ const handleStatusChange = async (taskId: string, newStatus: Task['status']) => 
   }
 };
 const handleGithubSync = () => {
-  window.location.href = '/api/github-auth';
+  const userId = session?.user.userId;
+  if (!userId) return alert('User ID missing');
+  const returnTo = encodeURIComponent(window.location.href);
+  const githubAuthUrl = `/api/github-auth?userId=${userId}&returnTo=${returnTo}`;
+  window.location.href = githubAuthUrl;
 };
 
 
