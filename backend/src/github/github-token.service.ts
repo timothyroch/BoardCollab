@@ -50,4 +50,38 @@ export class IntegrationsService {
 
     return response.json();
   }
+
+async getGitHubIssues(userId: string, repo: string) {
+  const token = await this.githubTokenRepo.findOne({
+    where: { user: { id: userId } },
+    relations: ['user'],
+    order: { created_at: 'DESC' },
+  });
+
+  if (!token || !token.access_token) {
+    throw new NotFoundException('GitHub token not found');
+  }
+
+  try {
+    const issuesRes = await fetch(`https://api.github.com/repos/${repo}/issues`, {
+      headers: {
+        Authorization: `token ${token.access_token}`,
+        Accept: 'application/vnd.github.v3+json',
+      },
+    });
+
+    if (!issuesRes.ok) {
+      const errText = await issuesRes.text();
+      console.error('GitHub API failed:', errText); 
+      throw new Error(`GitHub API error: ${errText}`);
+    }
+
+    const issues = await issuesRes.json();
+    return issues;
+  } catch (err) {
+    console.error('Failed to fetch GitHub issues:', err); 
+    throw new Error('Failed to fetch GitHub issues');
+  }
+}
+
 }

@@ -23,6 +23,11 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
   const [submitting, setSubmitting] = useState(false);
   const [users, setUsers] = useState<{ id: string; email: string; name?: string }[]>([]);
   const [selectedAssignees, setSelectedAssignees] = useState<string[]>([]);
+  const [githubRepos, setGithubRepos] = useState<any[]>([]);
+  const [selectedRepo, setSelectedRepo] = useState<string>('');
+  const [repoIssues, setRepoIssues] = useState<any[]>([]);
+  const [selectedIssue, setSelectedIssue] = useState<string>('');
+
 
   useEffect(() => {
   if (!tenantId) return;
@@ -93,9 +98,73 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
       setSubmitting(false);
     }
   };
+useEffect(() => {
+  if (!userId) return;
+
+  fetch(`/api/repos?userId=${userId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        setGithubRepos(data);
+      }
+    })
+    .catch(err => console.error('Failed to fetch GitHub repos', err));
+}, [userId]);
+
+useEffect(() => {
+  if (!selectedRepo || !userId) return;
+
+  fetch(`/api/github-issues?userId=${userId}&repo=${encodeURIComponent(selectedRepo)}`)
+    .then(res => res.json())
+    .then(data => {
+      if (Array.isArray(data)) {
+        setRepoIssues(data);
+      }
+    })
+    .catch(err => console.error('Failed to fetch issues', err));
+}, [selectedRepo, userId]);
 
   return (
     <div className="border p-4 rounded mb-6 max-w-xl">
+      {githubRepos.length > 0 && (
+  <div className="mb-4">
+    <Label>GitHub Repository</Label>
+    <select
+      value={selectedRepo}
+      onChange={(e) => {
+        setSelectedRepo(e.target.value);
+        setSelectedIssue('');
+      }}
+      className="border p-2 rounded w-full"
+    >
+      <option value="">-- Select a repository --</option>
+      {githubRepos.map((repo) => (
+        <option key={repo.id} value={repo.full_name}>
+          {repo.full_name}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
+{selectedRepo && repoIssues.length > 0 && (
+  <div className="mb-4">
+    <Label>GitHub Issue</Label>
+    <select
+      value={selectedIssue}
+      onChange={(e) => setSelectedIssue(e.target.value)}
+      className="border p-2 rounded w-full"
+    >
+      <option value="">-- Select an issue --</option>
+      {repoIssues.map((issue) => (
+        <option key={issue.id} value={issue.title}>
+          #{issue.number} - {issue.title}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+
       <h2 className="text-xl font-semibold mb-4">Create Task</h2>
 
       <div className="mb-4">

@@ -6,13 +6,24 @@ import { IntegrationsService } from './github-token.service';
 export class IntegrationsController { 
 constructor(private readonly integrationsService: IntegrationsService) {} 
 
-@Get('github/repos') 
+@Get('github/repos')
+async getGitHubRepos(@Req() req) {
+  const userId = req.query.userId;
+  if (!userId) throw new UnauthorizedException('Missing userId');
+  return this.integrationsService.getGitHubRepos(userId);
+}
 
-async getGitHubRepos(@Req() req) { 
-const userId = req.user?.id; 
-if (!userId) throw new UnauthorizedException('User not authenticated'); 
-return this.integrationsService.getGitHubRepos(userId); 
-} 
+@Get('github/issues')
+async getGitHubIssues(@Req() req) {
+  const userId = req.query.userId;
+  const repo = req.query.repo;
+
+  if (!userId || !repo) {
+    throw new UnauthorizedException('Missing userId or repo');
+  }
+
+  return this.integrationsService.getGitHubIssues(userId, repo);
+}
 
 
 @Post('save-github-token')
