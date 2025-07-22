@@ -13,6 +13,8 @@ import { InvitesModule } from './invites/invites.module';
 import { UsersModule } from './users/users.module';
 import { CommentsModule } from './comments/comments.module';
 import { GithubTokenModule } from './github/github-token.module';
+import { TaskIssueModule } from './Issues/task-issue.module';
+import { TaskIssue } from './Issues/task-issue.entity';
 
 
 
@@ -30,7 +32,7 @@ import { GithubTokenModule } from './github/github-token.module';
       password: 'password',
       database: 'boardcollab',
       autoLoadEntities: true, 
-      entities: [User, Tenant, Invite],
+      entities: [User, Tenant, Invite, TaskIssue],
       synchronize: true,      
     }),
     AuthModule,
@@ -40,6 +42,7 @@ import { GithubTokenModule } from './github/github-token.module';
     UsersModule,
     CommentsModule,
     GithubTokenModule,
+    TaskIssueModule,
   ],
   controllers: [],
   providers: [],

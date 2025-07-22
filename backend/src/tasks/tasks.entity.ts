@@ -11,6 +11,7 @@ import {
 import { User } from '../auth/user.entity';
 import { Tenant } from '../tenants/tenant.entity';
 import { Comment } from '../comments/comment.entity';
+import { TaskIssue } from 'src/Issues/task-issue.entity';
 
 @Entity()
 export class Task {
@@ -49,5 +50,8 @@ export class Task {
   default: 'to_do',
 })
 status: 'to_do' | 'in_progress' | 'done';
+
+@OneToMany(() => TaskIssue, issue => issue.task, { cascade: true })
+issues: TaskIssue[];
 
 }

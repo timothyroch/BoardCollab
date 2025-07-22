@@ -4,6 +4,7 @@ import { In, Repository } from 'typeorm';
 import { Task } from './tasks.entity';
 import { Tenant } from '../tenants/tenant.entity';
 import { User } from '../auth/user.entity';
+import { TaskIssue } from 'src/Issues/task-issue.entity';
 
 @Injectable()
 export class TasksService {
@@ -14,6 +15,9 @@ export class TasksService {
     private readonly tenantRepo: Repository<Tenant>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(TaskIssue)
+    private readonly taskIssueRepo: Repository<TaskIssue>,
+
   ) {}
 
 async createTask(title: string,
@@ -21,7 +25,8 @@ async createTask(title: string,
     creatorId: string,
     dueDate: any,
     assigneeEmails: string[],
-    status: 'to_do' | 'in_progress' | 'done' = 'to_do' 
+    status: 'to_do' | 'in_progress' | 'done' = 'to_do',
+    issues: { repo: string; issueNumber: number; issueTitle: string }[] = []
   ): Promise<Task> {
   const tenant = await this.tenantRepo.findOne({ where: { id: tenantId } });
   const creator = await this.userRepo.findOne({ where: { id: creatorId } });
@@ -34,26 +39,42 @@ async createTask(title: string,
   email: In(assigneeEmails),
 });
 
-  const due = dueDate ? new Date(dueDate) : null;
+  const due = dueDate ? new Date(dueDate) : undefined;
 
 
-  const task: Task = this.taskRepository.create({
+  const task = this.taskRepository.create({
     title,
     tenant,
     creator,
     assignees,
     dueDate: due,
     status,
-  } as Partial<Task>);
-
-  return this.taskRepository.save(task);
+  });
+  const savedTask = await this.taskRepository.save(task);
+if (issues.length > 0) {
+  const taskIssues = issues.map(issue => this.taskIssueRepo.create({
+    task: savedTask,
+    github_issue_number: issue.issueNumber,
+    github_issue_title: issue.issueTitle,
+    github_repo: issue.repo,
+  }));
+  await this.taskIssueRepo.save(taskIssues);
 }
+const fullTask = await this.taskRepository.findOne({
+  where: { id: savedTask.id },
+  relations: ['creator', 'assignees', 'issues'],
+});
 
+if (!fullTask) throw new Error('Failed to reload task');
+
+return fullTask;
+
+  }
 
   async getTasksByTenant(tenantId: string) {
     return this.taskRepository.find({
       where: { tenant: { id: tenantId } },
-      relations: ['creator', 'assignees'], 
+      relations: ['creator', 'assignees', 'issues'], 
       order: { createdAt: 'DESC' },
     });
   }
