@@ -29,19 +29,27 @@ async resolveUser(data: { email: string; name?: string; image?: string }) {
       order: { createdAt: 'DESC' },
     });
 
-    if (!pendingInvite) {
-      throw new Error('User not invited');
-    }
+let tenant: Tenant | null;
 
-    pendingInvite.status = 'accepted';
-    await this.inviteRepo.save(pendingInvite);
+if (pendingInvite) {
+  pendingInvite.status = 'accepted';
+  await this.inviteRepo.save(pendingInvite);
+  tenant = pendingInvite.tenant;
+} else {
+  tenant = await this.tenantRepository.findOne({ where: { name: 'Your workspace' } });
+  if (!tenant) {
+    tenant = this.tenantRepository.create({ name: 'your workspace' });
+    await this.tenantRepository.save(tenant);
+  }
+}
 
-    user = this.userRepository.create({
-      email: data.email,
-      name: data.name,
-      image: data.image,
-      tenants: [pendingInvite.tenant],
-    });
+user = this.userRepository.create({
+  email: data.email,
+  name: data.name,
+  image: data.image,
+  tenants: [tenant],
+});
+
 
     await this.userRepository.save(user);
   }
