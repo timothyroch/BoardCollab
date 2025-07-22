@@ -26,7 +26,11 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
   const [githubRepos, setGithubRepos] = useState<any[]>([]);
   const [selectedRepo, setSelectedRepo] = useState<string>('');
   const [repoIssues, setRepoIssues] = useState<any[]>([]);
-  const [selectedIssue, setSelectedIssue] = useState<string>('');
+  type SelectedIssue = {
+  number: number;
+  title: string;
+} | null;
+  const [selectedIssue, setSelectedIssue] = useState<SelectedIssue>(null);
 
 
   useEffect(() => {
@@ -70,6 +74,13 @@ export default function TaskCreator({ tenantId, userId, onTaskCreated }: TaskCre
       creatorId: userId,
       dueDate: dueDate.toISOString(),
       assigneeEmails: selectedAssignees,
+      issues: selectedIssue && selectedRepo
+    ? [{
+        repo: selectedRepo,
+        issueNumber: selectedIssue.number,
+        issueTitle: selectedIssue.title,
+      }]
+    : [],
     };
 
     setSubmitting(true);
@@ -131,10 +142,8 @@ useEffect(() => {
     <Label>GitHub Repository</Label>
     <select
       value={selectedRepo}
-      onChange={(e) => {
-        setSelectedRepo(e.target.value);
-        setSelectedIssue('');
-      }}
+onChange={(e) => setSelectedRepo(e.target.value)}
+
       className="border p-2 rounded w-full"
     >
       <option value="">-- Select a repository --</option>
@@ -151,13 +160,21 @@ useEffect(() => {
   <div className="mb-4">
     <Label>GitHub Issue</Label>
     <select
-      value={selectedIssue}
-      onChange={(e) => setSelectedIssue(e.target.value)}
+      value={selectedIssue ? JSON.stringify(selectedIssue) : ""}
+      onChange={(e) => {
+       try { 
+        const parsed = JSON.parse(e.target.value);
+        setSelectedIssue(parsed)
+       } catch (err) {
+        console.error("Failed to parse selected issue:", err);
+        setSelectedIssue(null);
+       }
+      }}
       className="border p-2 rounded w-full"
     >
       <option value="">-- Select an issue --</option>
       {repoIssues.map((issue) => (
-        <option key={issue.id} value={issue.title}>
+        <option key={issue.id} value={JSON.stringify({ number: issue.number, title: issue.title })}>
           #{issue.number} - {issue.title}
         </option>
       ))}
