@@ -35,4 +35,39 @@ export class MailerService {
       throw error;
     }
   }
+  static async sendTaskAssignmentEmail(
+  to: string,
+  taskTitle: string,
+  groupName: string,
+  assignerName: string,
+  link: string
+) {
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_APP_PASSWORD,
+    },
+  });
+
+  const mailOptions = {
+    from: `"${assignerName} via Workspace" <${process.env.GMAIL_USER}>`,
+    to,
+    subject: `New Task Assigned in ${groupName}`,
+    html: `
+      <p>You’ve been assigned a new task: <strong>${taskTitle}</strong> in group <strong>${groupName}</strong>.</p>
+      <p>Assigned by: ${assignerName}</p>
+      <p><a href="${link}">View Task</a></p>
+    `,
+  };
+
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log(`Assignment email sent to ${to}:`, info.response);
+  } catch (error) {
+    console.error('Failed to send task assignment email:', error);
+    throw error;
+  }
+}
+
 }

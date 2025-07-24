@@ -46,7 +46,7 @@ export class TasksController {
 
 @Post()
 async createTask(@Body() body: any) {
-  const { title, tenantId, creatorId, dueDate, assigneeEmails, status } = body;
+  const { title, tenantId, creatorId, dueDate, assigneeEmails, status, issues } = body;
   if (!title || !tenantId || !creatorId || !Array.isArray(assigneeEmails) || assigneeEmails.length === 0) {
     throw new BadRequestException('Missing required fields');
   }
@@ -57,10 +57,19 @@ async createTask(@Body() body: any) {
     dueDate,
     assigneeEmails,
     status,
+    issues,
   );
   this.tasksGateway.server
     .to(tenantId)
-    .emit('taskCreated', { ...task, tenantId });
+    .emit('taskCreated', {
+  id: task.id,
+  title: task.title,
+  status: task.status,
+  dueDate: task.dueDate,
+  creator: task.creator,
+  assignees: task.assignees,
+  issues: task.issues,
+  tenantId,});
   return task;
 }
 

@@ -6,9 +6,10 @@ import { TasksService } from './tasks.service';
 import { Task } from './tasks.entity';
 import { Tenant } from '../tenants/tenant.entity';
 import { User } from '../auth/user.entity';
+import { TaskIssueModule } from 'src/Issues/task-issue.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Task, Tenant, User])],
+  imports: [TypeOrmModule.forFeature([Task, Tenant, User]), TaskIssueModule,],
   controllers: [TasksController],
   providers: [TasksGateway, TasksService],
   exports: [TasksService, TasksGateway]

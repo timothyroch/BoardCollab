@@ -81,6 +81,25 @@ const handleStatusChange = async (task: Task) => {
           transition={{ duration: 0.5 }}
           className="p-6 bg-black border border-gray-700 rounded-lg shadow-lg hover:shadow-xl transition-shadow duration-300"
         >
+          {task.issues && task.issues.length > 0 && (
+            <div className="mt-2 text-sm text-gray-300">
+              <p className="font-semibold text-gold-400 mb-1">Linked GitHub Issues:</p>
+              <ul className="ml-4 list-disc">
+                {task.issues.map((issue) => (
+                  <li key={issue.id}>
+                    <a
+                      href={`https://github.com/${issue.github_repo}/issues/${issue.github_issue_number}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-blue-400"
+                    >
+                      {issue.github_repo} #{issue.github_issue_number} - {issue.github_issue_title}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
           <h3 className="font-serif text-2xl text-white mb-2 tracking-tight">{task.title}</h3>
           <div className="space-y-2 text-sm">
             <p className="text-gray-300">
