@@ -5,6 +5,7 @@ import { Task } from './tasks.entity';
 import { Tenant } from '../tenants/tenant.entity';
 import { User } from '../auth/user.entity';
 import { TaskIssue } from 'src/Issues/task-issue.entity';
+import { TaskMailer } from 'src/mailer/task-mailer.service';
 
 @Injectable()
 export class TasksService {
@@ -17,7 +18,6 @@ export class TasksService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(TaskIssue)
     private readonly taskIssueRepo: Repository<TaskIssue>,
-
   ) {}
 
 async createTask(title: string,
@@ -66,6 +66,26 @@ const fullTask = await this.taskRepository.findOne({
 });
 
 if (!fullTask) throw new Error('Failed to reload task');
+const assignerName = creator.name || creator.email;
+const groupName = tenant.name;
+const taskLink = `${process.env.FRONTEND_URL}/task/${savedTask.id}`;
+
+setImmediate(() => {
+  Promise.all(
+    assignees.map((assignee) =>
+      TaskMailer.sendTaskAssignmentEmail(
+        assignee.email,
+        title,
+        groupName,
+        assignerName,
+        taskLink,
+        issues
+      )
+    )
+  ).catch(err => console.error('Email sending failed:', err));
+});
+
+
 
 return fullTask;
 
