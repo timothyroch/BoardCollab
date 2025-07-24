@@ -87,7 +87,17 @@ return fullTask;
   }
 
   task.status = status;
-  return this.taskRepository.save(task);
+  await this.taskRepository.save(task);
+    const fullTask = await this.taskRepository.findOne({
+    where: { id: taskId },
+    relations: ['creator', 'assignees', 'tenant', 'issues'],
+  });
+
+  if (!fullTask) {
+    throw new Error('Failed to reload updated task');
+  }
+
+  return fullTask;
 }
 
 async getTaskById(taskId: string): Promise<Task | null> {
