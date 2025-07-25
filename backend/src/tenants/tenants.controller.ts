@@ -12,7 +12,18 @@ export class TenantsController {
 
   @Get()
   async getTenantsForUser(@Query('userId') userId: string) {
-    return this.tenantsService.getTenantsForUser(userId);
+    const tenants = await this.tenantsService.getTenantsForUser(userId);
+      const taskCounts = await this.tenantsService.getTenantTaskCounts(userId);
+
+  const merged = tenants.map(tenant => {
+    const match = taskCounts.find(t => t.tenantId === tenant.id);
+    return {
+      ...tenant,
+      taskCount: match ? match.taskCount : 0,
+    };
+  });
+
+  return merged;
   }
    @Delete(':tenantId/users/:userId')
   async removeUserFromTenant(

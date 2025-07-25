@@ -19,7 +19,7 @@ export default function TenantDashboard() {
     : Array.isArray(params?.['tenantId'])
       ? params['tenantId'][0]
       : undefined;
-  const [activeTab, setActiveTab] = useState<'general' | 'my-space' | 'group'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'my-space' | 'group'>('group');
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteError, setInviteError] = useState('');
   const [inviteSuccess, setInviteSuccess] = useState('');

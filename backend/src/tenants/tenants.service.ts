@@ -28,13 +28,43 @@ return await this.tenantRepo.save(tenant);
 }
 
 
-  async getTenantsForUser(userId: string): Promise<Tenant[]> {
-    return this.tenantRepo
+  async getTenantsForUser(userId: string): Promise<{ id: string; name: string; memberCount: number; taskCount: number }[]> {
+    const tenants = await this.tenantRepo
       .createQueryBuilder('tenant')
-      .leftJoinAndSelect('tenant.members', 'member')
-      .where('member.id = :userId', { userId })
-      .getMany();
+      .innerJoin('tenant.members', 'member', 'member.id = :userId', { userId })
+    .leftJoin('tenant.members', 'm') 
+    .leftJoin('tenant.tasks', 'task')
+    .leftJoin('task.assignees', 'assignee')
+    .select('tenant.id', 'id')
+    .addSelect('tenant.name', 'name')
+    .addSelect('COUNT(DISTINCT m.id)', 'memberCount')
+    .addSelect(`
+      COUNT(DISTINCT CASE WHEN assignee.id = :userId THEN task.id END)
+    `, 'taskCount')
+    .groupBy('tenant.id')
+    .addGroupBy('tenant.name')
+    .setParameter('userId', userId)
+    .getRawMany();
+
+  return tenants.map(t => ({
+    id: t.id,
+    name: t.name,
+    memberCount: Number(t.memberCount),
+    taskCount: Number(t.taskCount),
+  }));
   }
+  async getTenantTaskCounts(userId: string): Promise<{ tenantId: string; taskCount: number }[]> {
+  return this.tenantRepo
+    .createQueryBuilder('tenant')
+    .leftJoin('tenant.tasks', 'task')
+    .leftJoin('task.assignees', 'assignee')
+    .where('assignee.id = :userId', { userId })
+    .select('tenant.id', 'tenantId')
+    .addSelect('COUNT(task.id)', 'taskCount')
+    .groupBy('tenant.id')
+    .getRawMany();
+}
+
 
   async removeUserFromTenant(userId: string, tenantId: string): Promise<void> {
   const user = await this.userRepo.findOne({

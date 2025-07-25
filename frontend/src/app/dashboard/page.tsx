@@ -3,6 +3,8 @@
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { Plus, X } from 'lucide-react';
+
 
 export default function DashboardPage() {
   const { data: session, status } = useSession();
@@ -14,6 +16,8 @@ export default function DashboardPage() {
   const [createdTenant, setCreatedTenant] = useState<any>(null);
   const [userTenants, setUserTenants] = useState<any[]>([]);
   const [invites, setInvites] = useState<any[]>([]);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -95,6 +99,7 @@ const handleCreateTenant = async () => {
     } else {
       setCreatedTenant(data);
       setTenantName('');
+      setShowCreateModal(false);
     }
   } catch (err) {
     setError('Network error');
@@ -140,75 +145,117 @@ const tenants = createdTenant
 
 
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-4">Welcome, {session?.user?.userId}</h1>
-
-      <h2 className="text-xl mb-2">Your Workspaces</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
+    <div className="p-8 max-w-4xl mx-auto">
+      <h1 className="text-3xl font-bold mb-6 text-white">Welcome, {session?.user?.name}</h1>
+      <section className="mb-12">
+      <h2 className="text-2xl mb-4 font-semibold text-white/80">Your Workspaces</h2>
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
         {tenants.map((tenant) => (
           <div
             key={tenant.id}
-            className="border p-4 rounded shadow cursor-pointer hover:bg-gray-100 transition"
+            className="relative border bg-neutral-900 p-6 rounded-2xl border-white/20 shadow cursor-pointer hover:bg-neutral-800 transition"
             onClick={() => handleTenantClick(tenant.id)}
           >
-            <h3 className="text-lg font-semibold">{tenant.name}</h3>
-            <p className="text-sm text-gray-600">Click to manage tasks</p>
+              {tenant.taskCount > 0 && (
+    <div className="absolute top-3 right-3 bg-white text-black text-xs font-semibold px-2 py-1 rounded-full shadow">
+      {tenant.taskCount}
+    </div>
+  )}
+            
+            <h3 className="text-lg font-semibold text-white mb-1">{tenant.name}</h3>
+<div className="flex justify-between text-white/70 text-sm mt-2">
+  <span>{tenant.memberCount} member{tenant.memberCount !== 1 ? 's' : ''}</span>
+</div>
+
+
           </div>
         ))}
-      </div>
+      
+      <div
+            onClick={() => setShowCreateModal(true)}
+            className="
+              p-6 bg-neutral-900 border border-white/20 rounded-2xl shadow
+              hover:bg-neutral-800 hover:shadow-xl transition cursor-pointer
+              flex flex-col items-center justify-center
+            "
+          >
+            <Plus className="h-8 w-8 text-white/60 mb-2" />
+            <span className="text-lg font-semibold text-white">
+              Create New Group
+            </span>
+          </div>
+        </div>
+</section>
 
-<div className="border rounded p-6 max-w-md bg-white shadow text-gray-900">
-  <h3 className="text-xl font-bold mb-4">Create New Group</h3>
-  <input
-    type="text"
-    placeholder="Group name"
-    className="w-full border border-gray-300 px-4 py-2 rounded mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
-    value={tenantName}
-    onChange={(e) => setTenantName(e.target.value)}
-  />
-  <button
-    className={`px-4 py-2 rounded w-full font-medium transition ${
-      isCreating
-        ? 'bg-blue-400 text-white cursor-not-allowed'
-        : 'bg-blue-600 hover:bg-blue-700 text-white'
-    }`}
-    onClick={handleCreateTenant}
-    disabled={isCreating}
-  >
-    {isCreating ? 'Creating...' : 'Create Group'}
-  </button>
-  {error && <p className="text-red-600 text-sm mt-3">{error}</p>}
-</div>
 {invites.length > 0 && (
-  <div className="mt-8">
-    <h2 className="text-xl mb-2">Pending Invites</h2>
-    <ul className="space-y-2">
+  <section className="mb-12">
+    <h2 className="text-2xl mb-4 font-semibold text-white/80">Pending Invites</h2>
+    <ul className="space-y-4">
       {invites.map((invite) => (
-        <li key={invite.id} className="border p-4 rounded shadow">
-          <div className="flex justify-between items-center">
-            <div>
-              <p><strong>{invite.tenant?.name}</strong> invited you</p>
-            </div>
+        <li key={invite.id} className="border p-6 rounded-2xl shadow border-white/20 bg-neutral-900">
+
+              <p className="text-white"><strong>{invite.tenant?.name}</strong> invited you</p>
             <div className="flex gap-2">
               <button
                 onClick={() => handleAccept(invite.id)}
-                className="bg-green-600 text-white px-3 py-1 rounded"
+                className="bg-green-400 text-gray-900 px-4 py-1 font-medium rounded-lg hover:bg-green-300 transition"
               >
                 Accept
               </button>
               <button
                 onClick={() => handleReject(invite.id)}
-                className="bg-red-600 text-white px-3 py-1 rounded"
+                className="bg-red-500 font-medium text-white px-4 py-1 rounded-lg hover:bg-red-400"
               >
                 Reject
               </button>
             </div>
-          </div>
+
         </li>
       ))}
     </ul>
-  </div>
+  </section>
 )}
+{showCreateModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-neutral-900 border border-white/20 rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
+            <button
+              onClick={() => setShowCreateModal(false)}
+              className="absolute top-4 right-4 text-white/60 hover:text-white"
+            >
+              <X className="h-6 w-6" />
+            </button>
+            <h3 className="text-xl font-semibold text-white mb-4">
+              Create New Group
+            </h3>
+            <input
+              type="text"
+              placeholder="Group name"
+              className="
+                w-full px-4 py-2 bg-neutral-800 text-white border border-white/30
+                rounded-xl mb-4 focus:outline-none focus:ring-2 focus:ring-white/30
+                focus:border-white transition
+              "
+              value={tenantName}
+              onChange={e => setTenantName(e.target.value)}
+            />
+            <button
+              onClick={handleCreateTenant}
+              disabled={isCreating}
+              className={`
+                w-full px-5 py-2 rounded-xl font-semibold transition
+                ${isCreating
+                  ? 'bg-white/50 text-gray-500 cursor-not-allowed'
+                  : 'bg-white text-black hover:bg-gray-100'}
+              `}
+            >
+              {isCreating ? 'Creating...' : 'Create Group'}
+            </button>
+            {error && (
+              <p className="text-red-400 text-sm mt-3">{error}</p>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );
