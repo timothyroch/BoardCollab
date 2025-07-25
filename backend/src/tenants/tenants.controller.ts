@@ -22,4 +22,14 @@ export class TenantsController {
     await this.tenantsService.removeUserFromTenant(userId, tenantId);
     return { message: 'User removed from tenant' };
   }
+
+  @Get(':tenantId')
+async getTenantById(@Param('tenantId') tenantId: string) {
+  const tenant = await this.tenantsService.getTenantById(tenantId);
+  if (!tenant) {
+    return { message: 'Tenant not found' }; 
+  }
+  return tenant;
+}
+
 }

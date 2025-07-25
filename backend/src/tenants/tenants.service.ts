@@ -43,8 +43,28 @@ return await this.tenantRepo.save(tenant);
   });
 
   if (!user) throw new Error('User not found');
+  user.tenants = user.tenants.filter(t => t.id !== tenantId);
+  await this.userRepo.save(user);
+
+  const tenant = await this.tenantRepo.findOne({
+    where: { id: tenantId },
+    relations: ['members'],
+  });
+
+  if (!tenant) throw new Error('Tenant not found');
+
+  tenant.members = tenant.members.filter(member => member.id !== userId);
+  await this.tenantRepo.save(tenant);
 
 }
+
+async getTenantById(tenantId: string): Promise<Tenant | null> {
+  return this.tenantRepo.findOne({
+    where: { id: tenantId },
+    relations: ['members', 'leader'],
+  });
+}
+
 
 }
 

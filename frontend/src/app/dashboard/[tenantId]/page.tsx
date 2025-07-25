@@ -25,11 +25,27 @@ export default function TenantDashboard() {
   const [inviteSuccess, setInviteSuccess] = useState('');
   const [tasks, setTasks] = useState<Task[]>([]);
   const { data: session } = useSession();
+  const [tenantName, setTenantName] = useState<string | null>(null);
 
 const userId = session?.user?.userId;
 const userEmail = session?.user?.email;
 
+useEffect(() => {
+  const fetchTenantName = async () => {
+    if (!tenantId) return;
+    try {
+      const res = await fetch(`/api/get-tenant?tenantId=${tenantId}`);
+      const data = await res.json();
+      if (res.ok && data.name) {
+        setTenantName(data.name);
+      }
+    } catch (err) {
+      console.error('Failed to fetch tenant name:', err);
+    }
+  };
 
+  fetchTenantName();
+}, [tenantId]);
     const sendInvite = async () => {
   setInviteError('');
   setInviteSuccess('');
@@ -128,6 +144,7 @@ useEffect(() => {
           onSendInvite={sendInvite}
           inviteError={inviteError}
           inviteSuccess={inviteSuccess}
+          tenantName={tenantName ?? ''}
         />
       )}
 
