@@ -13,6 +13,7 @@
     "@fullcalendar/daygrid": "^6.1.18",
     "@fullcalendar/react": "^6.1.18",
     "@headlessui/react": "^2.2.6",
+    "@heroicons/react": "^2.2.0",
     "date-fns": "^4.1.0",
     "framer-motion": "^12.23.5",
     "googleapis": "^152.0.0",

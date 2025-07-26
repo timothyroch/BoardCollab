@@ -3,6 +3,8 @@ import Button from './ui/Button';
 import Input from './ui/input';
 import { Label } from './ui/label';
 import socket from '../../utils/socket';
+import { ArrowUpIcon } from '@heroicons/react/24/solid';
+
 
 interface Comment {
   id: string;
@@ -45,7 +47,7 @@ function TaskComments({ taskId }: TaskCommentsProps) {
 
   socket.on('commentAdded', handleNewComment);
 
-  const tenantId = sessionStorage.getItem('tenantId'); // Make sure tenantId is stored at login
+  const tenantId = sessionStorage.getItem('tenantId'); 
   if (tenantId) {
     socket.emit('joinRoom', tenantId);
   }
@@ -76,7 +78,7 @@ function TaskComments({ taskId }: TaskCommentsProps) {
   };
 
   return (
-    <div className="mt-4 border-t border-gray-700 pt-4">
+    <div className="">
       <Label htmlFor="title">Comments</Label>
       {loading ? (
         <p className="text-gray-400 text-sm">Loading...</p>
@@ -107,9 +109,17 @@ function TaskComments({ taskId }: TaskCommentsProps) {
     }}
           placeholder="Add a comment..."
         />
-      <Button onClick={handleSubmit}>
-        Post
-      </Button>
+      <button onClick={handleSubmit} 
+  className="
+    p-3 rounded-xl bg-transparent text-white border border-white/10
+    hover:border-white/20 hover:shadow-[0_0_8px_rgba(255,255,255,0.1)]
+    transition-all duration-300 ease-in-out flex items-center justify-center
+    shadow-sm transform hover:scale-102 focus:outline-none focus:ring-2 focus:ring-white/15
+  "
+  title="Post comment"
+>
+  <ArrowUpIcon className="w-5 h-5" />
+      </button>
       </div>
     </div>
   );
