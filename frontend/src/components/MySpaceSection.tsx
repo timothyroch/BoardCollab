@@ -1,11 +1,11 @@
 'use client';
 
 import { useCallback, useState, useEffect, useRef } from 'react';
-import Button from './ui/Button';
 import TaskList from './TaskList';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import { Task } from '../../types/task';
+import { Calendar as CalendarIcon } from 'lucide-react';
 
 
 
@@ -46,7 +46,7 @@ const handleStatusChange = async (taskId: string, newStatus: Task['status']) => 
     case 'done':
       return '#34D399'; 
     case 'in_progress':
-      return '#FACC15'; 
+      return '#FFFFFF'; 
     case 'to_do':
     default:
       return '#9CA3AF'; 
@@ -123,13 +123,16 @@ const handleSync = useCallback(async (task: Task) => {
 };
 
   return (
-    <div>
-      <h2 className="text-xl font-semibold mb-4">My Assigned Tasks</h2>
-      <p className="text-gray-600 mb-4">
+    <div className="p-8 max-w-4xl mx-auto">
+      <div className="flex justify-between items-center mb-8">
+      <h2 className="text-3xl font-bold tracking-tight text-white [text-shadow:0_2px_4px_rgba(255,255,255,0.3)]">My Assigned Tasks</h2>
+      </div>
+      <p className="text-white/60 mb-8 text-sm">
         You have {assignedTasks.length} task{assignedTasks.length !== 1 ? 's' : ''} assigned to you.
       </p>
-  <div className="fc-wrapper text-white rounded shadow p-4 mb-8">
+  <div className="bg-neutral-900 border border-white/20 rounded-2xl shadow-xl p-6 mb-8">
     <FullCalendar
+      ref={calendarRef}
       plugins={[dayGridPlugin]}
       initialView="dayGridMonth"
       events={calendarEvents}
@@ -139,7 +142,87 @@ const handleSync = useCallback(async (task: Task) => {
         center: 'title',
         right: 'dayGridMonth',
       }}
-    />
+    eventContent={eventInfo => (
+            <div className="flex items-center gap-2 text-sm text-gray-900 font-medium p-1 rounded">
+              <span
+                className="h-2 w-2 rounded-full"
+                style={{ backgroundColor: eventInfo.event.backgroundColor }}
+              />
+              {eventInfo.event.title}
+            </div>
+          )}
+          dayCellClassNames="bg-neutral-900 text-white/80"
+          eventClassNames="border-0"
+          titleFormat={{ year: 'numeric', month: 'long' }}
+          customButtons={{
+            prev: {
+              text: '←',
+              click: () => calendarRef.current.getApi().prev(),
+            },
+            next: {
+              text: '→',
+              click: () => calendarRef.current.getApi().next(),
+            },
+            today: {
+              text: 'Today',
+              click: () => calendarRef.current.getApi().today(),
+            },
+          }}
+        />
+        <style jsx global>{`
+          .fc {
+            --fc-bg-color: #171717;
+            --fc-text-color: #ffffff;
+            --fc-border-color: #ffffff33;
+            --fc-button-bg-color: #1f2937;
+            --fc-button-border-color: #ffffff4d;
+            --fc-button-hover-bg-color: #ffffff1a;
+            --fc-button-hover-border-color: #ffffff80;
+            --fc-button-active-bg-color: #ffffff33;
+            --fc-button-active-border-color: #ffffff80;
+            --fc-button-text-color: #ffffff;
+          }
+          .fc .fc-toolbar {
+            background: transparent;
+            color: var(--fc-button-text-color);
+            margin-bottom: 1rem;
+          }
+          .fc .fc-toolbar-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #ffffff;
+            text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
+          }
+          .fc .fc-button {
+            background: var(--fc-button-bg-color);
+            border: 1px solid var(--fc-button-border-color);
+            color: var(--fc-button-text-color);
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease-in-out;
+          }
+          .fc .fc-button:hover {
+            background: var(--fc-button-hover-bg-color);
+            border-color: var(--fc-button-hover-border-color);
+            transform: scale(1.05);
+          }
+          .fc .fc-button:active {
+            background: var(--fc-button-active-bg-color);
+            border-color: var(--fc-button-active-border-color);
+          }
+          .fc .fc-daygrid-day {
+            background: var(--fc-bg-color);
+            border-color: var(--fc-border-color);
+          }
+          .fc .fc-daygrid-day-number {
+            color: var(--fc-text-color);
+          }
+          .fc .fc-col-header-cell {
+            background: var(--fc-bg-color);
+            color: #ffffff;
+            font-weight: 600;
+          }
+        `}</style>
   </div>
   
       <TaskList
@@ -148,9 +231,16 @@ const handleSync = useCallback(async (task: Task) => {
         onStatusChange={handleStatusChange}
         renderTaskExtras={(task) => (
           
-          <Button onClick={() => handleSync(task as Task)}>
+          <button onClick={() => handleSync(task)}
+          className="
+              inline-flex items-center justify-center px-4 py-2 text-sm font-semibold
+              text-white bg-gray-800/50 border border-white/30 rounded-xl
+              hover:bg-white/10 hover:text-white hover:border-white/50 hover:shadow-lg
+              transition-all duration-300 ease-in-out transform hover:scale-105 mt-4
+            ">
+              <CalendarIcon className="mr-2 h-4 w-4" />
             Sync to Google Calendar
-          </Button>
+          </button>
         )}
         onDeleteTask={handleDelete}
       />
