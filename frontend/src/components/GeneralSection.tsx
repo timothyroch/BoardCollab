@@ -59,11 +59,11 @@ export default function GeneralSection({
   return (
     <div className="p-6 max-w-2xl mx-auto relative">
       <div className="flex justify-between items-center mb-6">
-      <h2 className="text-4xl font-bold tracking-tight text-amber-300 [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">{tenantName} <span className="text-white text-2xl">Members</span></h2>
+      <h2 className="text-4xl font-bold tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">{tenantName}{' '} <span className="text-white/80 text-2xl">Members</span></h2>
         <button
           onClick={() => setShowInvitePopup(true)}
-          className="text-amber-400/70 text-sm font-medium px-4 py-1.5 rounded-lg border border-amber-400/50
-            hover:text-amber-300 hover:bg-amber-400/10 transition-all duration-300"
+          className="text-white/70 text-sm font-medium px-4 py-1.5 rounded-lg border border-white/50
+            hover:text-white hover:bg-white/10 transition-all duration-300"
         >
           Add User
         </button>
@@ -71,7 +71,7 @@ export default function GeneralSection({
         {showInvitePopup && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-neutral-950 p-6 rounded-lg shadow-xl max-w-md w-full">
-      <h3 className="text-lg font-semibold mb-4 text-amber-300">Invite User</h3>
+      <h3 className="text-lg font-semibold mb-4 text-white">Invite User</h3>
       <Input
         type="email"
         placeholder="Enter user's email"
@@ -81,16 +81,16 @@ export default function GeneralSection({
         <div className="flex justify-end space-x-3 mt-4">
               <button
                 onClick={() => setShowInvitePopup(false)}
-                className="text-amber-400/70 text-sm font-medium px-4 py-2 rounded-lg border border-amber-400/50
-                  hover:text-amber-300 hover:bg-amber-400/10 transition-all duration-300"
+                className="text-white/70 text-sm font-medium px-4 py-2 rounded-lg border border-white/50
+                  hover:text-white hover:bg-white/10 transition-all duration-300"
               >
                 Cancel
               </button>
       <button
         onClick={async () => {await onSendInvite();
                 if (!inviteError) setShowInvitePopup(false);}}
-                className="bg-amber-400 text-black px-5 py-2 rounded-lg font-semibold
-                  hover:bg-amber-500 hover:shadow-md transition-all duration-300">
+                className="bg-white text-black px-5 py-2 rounded-lg font-semibold
+                  hover:bg-gray-100 hover:shadow-md transition-all duration-300">
         Send Invite
       </button>
       </div>
@@ -100,19 +100,19 @@ export default function GeneralSection({
       </div>
       )}
       <div className="mt-8">
-        <h4 className="text-lg font-semibold mb-4 text-amber-200">Current Members</h4>
+        <h4 className="text-lg font-semibold mb-4 text-white/80">Current Members</h4>
         {loadingUsers ? (
-          <p className="text-sm text-amber-400/60">Loading users...</p>
+          <p className="text-sm text-white/60">Loading users...</p>
         ) : users.length === 0 ? (
-          <p className="text-sm text-amber-400/60">No members yet.</p>
+          <p className="text-sm text-white/60">No members yet.</p>
         ) : (
           <ul className="space-y-4">
             {users.map((user) => (
               <li key={user.id}
-              className="text-lg font-medium text-amber-300 [text-shadow:0_1px_3px_rgba(251,191,36,0.4)]
-                  border-l-4 border-amber-400 pl-4 py-2 hover:bg-amber-400/10 transition-all duration-300"
+              className="text-lg font-medium text-white [text-shadow:0_1px_3px_rgba(0,0,0,4)]
+                  border-l-4 border-white pl-4 py-2 hover:bg-white/10 transition-all duration-300"
               >
-                {user.name || user.email} <span className="text-white">- {user.email}</span>
+                {user.name || user.email} <span className="text-white/80">- {user.email}</span>
               </li>
             ))}
           </ul>
@@ -141,7 +141,7 @@ export default function GeneralSection({
       alert(data.message || 'Failed to leave the group.');
     }
   }}
-  className="mt-6 text-amber-400/60 text-sm font-medium hover:text-amber-300/80
+  className="mt-6 text-white/60 text-sm font-medium hover:text-white/80
           transition-all duration-300"
 >
   Leave Group
