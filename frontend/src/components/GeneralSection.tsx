@@ -57,7 +57,7 @@ export default function GeneralSection({
     fetchUsers();
   }, [tenantId]);
   return (
-    <div className="p-6 max-w-2xl mx-auto relative">
+    <div className="p-6 max-w-2xl mx-auto relative min-h-screen">
       <div className="flex justify-between items-center mb-6">
       <h2 className="text-4xl font-bold tracking-tight text-white [text-shadow:0_1px_2px_rgba(0,0,0,0.3)]">{tenantName}{' '} <span className="text-white/80 text-2xl">Members</span></h2>
         <button

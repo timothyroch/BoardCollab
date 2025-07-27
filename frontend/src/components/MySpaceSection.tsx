@@ -123,7 +123,7 @@ const handleSync = useCallback(async (task: Task) => {
 };
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-4xl mx-auto min-h-screen">
       <div className="flex justify-between items-center mb-8">
       <h2 className="text-3xl font-bold tracking-tight text-white [text-shadow:0_2px_4px_rgba(255,255,255,0.3)]">My Assigned Tasks</h2>
       </div>
