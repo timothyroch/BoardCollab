@@ -21,7 +21,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (status === 'unauthenticated') {
-      router.push('/signin');
+      router.push('/');
     }
   }, [status, router]);
 
@@ -145,7 +145,7 @@ const tenants = createdTenant
 
 
   return (
-    <div className="p-8 max-w-4xl mx-auto">
+    <div className="p-8 max-w-4xl mx-auto min-h-screen">
       <h1 className="text-3xl font-bold mb-6 text-white">Welcome, {session?.user?.name}</h1>
       <section className="mb-12">
       <h2 className="text-2xl mb-4 font-semibold text-white/80">Your Workspaces</h2>
