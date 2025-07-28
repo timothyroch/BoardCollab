@@ -16,7 +16,7 @@ export default function HeaderSelector({ activeTab, onTabChange }: HeaderSelecto
   ];
 
   return (
-    <div className="flex mb-4 border-amber-900/30 pb-2">
+    <div className="flex mb-4 border-white/30 pb-2">
       {tabs.map(({ key, label }) => (
         <button
           key={key}
@@ -24,10 +24,10 @@ export default function HeaderSelector({ activeTab, onTabChange }: HeaderSelecto
           className={cn(
             'flex-1 text-sm font-medium px-4 py-2 transition-all duration-300',
             activeTab === key
-              ? 'text-amber-300 border-b-2 border-amber-400'
-              : 'text-amber-400/60 hover:text-amber-300/80 hover:bg-amber-900/10',
+              ? 'text-white border-b-2 border-white'
+              : 'text-white/60 hover:text-white hover:bg-white/10',
             'relative before:absolute before:bottom-0 before:left-0 before:right-0 before:h-0.5',
-            'before:bg-amber-400 before:opacity-0 before:transition-opacity before:duration-300',
+            'before:bg-white before:opacity-0 before:transition-opacity before:duration-300',
             'hover:before:opacity-100'
           )}
         >
