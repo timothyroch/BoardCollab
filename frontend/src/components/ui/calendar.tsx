@@ -6,7 +6,7 @@ import 'react-day-picker/dist/style.css';
 
 export function Calendar(props: DayPickerProps) {
   return (
-    <div className="rounded-md border p-2">
+    <div className="rounded-md p-2">
       <DayPicker
         classNames={{
           months: 'flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4',
@@ -23,6 +23,7 @@ export function Calendar(props: DayPickerProps) {
           day_selected: 'bg-blue-500 text-white hover:bg-blue-600',
           day_today: 'border border-blue-400',
         }}
+        disabled={{ before: new Date() }}
         {...props}
       />
     </div>

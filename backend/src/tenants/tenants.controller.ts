@@ -12,7 +12,18 @@ export class TenantsController {
 
   @Get()
   async getTenantsForUser(@Query('userId') userId: string) {
-    return this.tenantsService.getTenantsForUser(userId);
+    const tenants = await this.tenantsService.getTenantsForUser(userId);
+      const taskCounts = await this.tenantsService.getTenantTaskCounts(userId);
+
+  const merged = tenants.map(tenant => {
+    const match = taskCounts.find(t => t.tenantId === tenant.id);
+    return {
+      ...tenant,
+      taskCount: match ? match.taskCount : 0,
+    };
+  });
+
+  return merged;
   }
    @Delete(':tenantId/users/:userId')
   async removeUserFromTenant(
@@ -22,4 +33,14 @@ export class TenantsController {
     await this.tenantsService.removeUserFromTenant(userId, tenantId);
     return { message: 'User removed from tenant' };
   }
+
+  @Get(':tenantId')
+async getTenantById(@Param('tenantId') tenantId: string) {
+  const tenant = await this.tenantsService.getTenantById(tenantId);
+  if (!tenant) {
+    return { message: 'Tenant not found' }; 
+  }
+  return tenant;
+}
+
 }
