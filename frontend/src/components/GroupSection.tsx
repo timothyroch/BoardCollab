@@ -140,7 +140,10 @@ const handleGithubSync = () => {
         tenantId={tenantId}
         userId={session?.user?.userId}
         onTaskCreated={task => {
-                setTasks(prev => [...prev, task]);
+                setTasks(prev => {
+                  const exists = prev.some(t => t.id === task.id);
+                  return exists ? prev : [...prev, task];
+                });
                 setShowTaskCreator(false);
         }}
       />
