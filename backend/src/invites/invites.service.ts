@@ -91,6 +91,7 @@ async acceptInvite(inviteId: string, userId: string) {
     user.tenants.push(invite.tenant);
     await this.userRepo.save(user);
   }
+  await this.inviteRepo.delete(invite.id);
 }
 
 async acceptInviteByEmail(email: string, userId: string) {
@@ -139,8 +140,8 @@ async getInviteByToken(token: string) {
     if (!invite || invite.status !== 'pending') {
       throw new NotFoundException('Invite not found or already handled');
     }
-
-    invite.status = 'rejected';
-    await this.inviteRepo.save(invite);
+    await this.inviteRepo.delete(inviteId);
+    //invite.status = 'rejected';
+    //await this.inviteRepo.save(invite);
   }
 }

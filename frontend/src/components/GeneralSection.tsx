@@ -87,7 +87,13 @@ export default function GeneralSection({
                 Cancel
               </button>
       <button
-        onClick={async () => {await onSendInvite();
+        onClick={async () => {
+              const alreadyMember = users.some(user => user.email === inviteEmail.trim().toLowerCase());
+              if (alreadyMember) {
+                alert('This user is already a member of the group.');
+                return;
+              }       
+          await onSendInvite();
                 if (!inviteError) setShowInvitePopup(false);}}
                 className="bg-white text-black px-5 py-2 rounded-lg font-semibold
                   hover:bg-gray-100 hover:shadow-md transition-all duration-300">

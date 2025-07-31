@@ -32,6 +32,8 @@ export default function DashboardPage() {
 
 useEffect(() => {
   if (status !== 'authenticated') return;
+    fetchTenants(); 
+}, [status, session]);
 
   const fetchTenants = async () => {
     const userId = session?.user?.userId;
@@ -46,8 +48,7 @@ useEffect(() => {
     }
   };
 
-  fetchTenants(); 
-}, [status, session]);
+
 
 useEffect(() => {
   if (!session?.user?.email) return;
@@ -97,7 +98,7 @@ const handleCreateTenant = async () => {
     if (!res.ok) {
       setError(data.message || 'Failed to create tenant');
     } else {
-      setCreatedTenant(data);
+      await fetchTenants();
       setTenantName('');
       setShowCreateModal(false);
     }
@@ -116,6 +117,7 @@ const handleAccept = async (inviteId: string) => {
       body: JSON.stringify({ inviteId, userId: session?.user?.userId }),
     });
     setInvites((prev) => prev.filter((i) => i.id !== inviteId));
+    await fetchTenants();
   } catch (err) {
     console.error('Failed to accept invite', err);
   }
