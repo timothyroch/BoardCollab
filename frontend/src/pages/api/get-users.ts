@@ -1,7 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getToken } from 'next-auth/jwt';
 
-const secret = process.env.NEXTAUTH_SECRET;
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   const { tenantId } = req.query;
@@ -10,17 +8,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     return res.status(400).json({ message: 'Missing or invalid tenantId' });
   }
 
-  const token = await getToken({ req, secret });
 
-  if (!token) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
 
   try {
     const backendRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/users/by-tenant?tenantId=${tenantId}`, {
-      headers: {
-        Authorization: `Bearer ${token}`, 
-      },
     });
 
     const data = await backendRes.json();
