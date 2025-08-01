@@ -2,19 +2,15 @@ import { Module, MiddlewareConsumer, RequestMethod } from '@nestjs/common';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TenantMiddleware } from './middleware/tenant.middleware';
-import { TasksGateway } from './tasks/tasks.gateway';
-import { User } from './auth/user.entity';
-import { Tenant } from './tenants/tenant.entity';
 import { TenantsModule } from './tenants/tenants.module';
-import { Invite } from './invites/invite.entity';
 import { InvitesModule } from './invites/invites.module';
 import { UsersModule } from './users/users.module';
 import { CommentsModule } from './comments/comments.module';
 import { GithubTokenModule } from './github/github-token.module';
 import { TaskIssueModule } from './Issues/task-issue.module';
-import { TaskIssue } from './Issues/task-issue.entity';
+import { HealthController } from './health/health.controller';
 
 
 
@@ -24,16 +20,18 @@ import { TaskIssue } from './Issues/task-issue.entity';
     ConfigModule.forRoot({
       isGlobal: true,
     }),
-    TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'postgres',
-      port: 5432,
-      username: 'tim',
-      password: 'password',
-      database: 'boardcollab',
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+       type: 'postgres',
+       url: config.get<string>('DATABASE_URL'),
+        ssl: {
+          rejectUnauthorized: false,
+        },
       autoLoadEntities: true, 
-      entities: [User, Tenant, Invite, TaskIssue],
-      synchronize: true,      
+      synchronize: true, 
+      }),     
     }),
     AuthModule,
     TasksModule,
@@ -44,13 +42,14 @@ import { TaskIssue } from './Issues/task-issue.entity';
     GithubTokenModule,
     TaskIssueModule,
   ],
-  controllers: [],
+  controllers: [HealthController],
   providers: [],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {
     consumer
       .apply(TenantMiddleware)
+      .exclude({ path: 'health', method: RequestMethod.GET })
       .forRoutes({ path: '*', method: RequestMethod.ALL });
   }
 }
