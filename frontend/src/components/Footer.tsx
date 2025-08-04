@@ -14,7 +14,7 @@ export default function Footer() {
           <ul className="space-y-2">
             <li>
               <a
-                href="https://instagram.com"
+                href="https://instagram.com/gitsync/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-white/70 hover:text-white hover:underline"
@@ -25,7 +25,7 @@ export default function Footer() {
             </li>
             <li>
               <a
-                href="https://facebook.com"
+                href="https://facebook.com/gitsyncProfile"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-white/70 hover:text-white hover:underline"
@@ -36,7 +36,7 @@ export default function Footer() {
             </li>
             <li>
               <a
-                href="https://linkedin.com"
+                href="https://linkedin.com/company/gitsyncapp/about/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-2 text-white/70 hover:text-white hover:underline"
@@ -50,7 +50,7 @@ export default function Footer() {
 
         <div>
           <h4 className="font-semibold mb-2 text-white/90">Contact</h4>
-          <p className="text-white/70">gitsync@gmail.com</p>
+          <p className="text-white/70">gitsyncs@gmail.com</p>
         </div>
 
         <div>
