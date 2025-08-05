@@ -328,12 +328,10 @@ The frontend uses **NextAuth.js** with **Google OAuth** (`src/pages/api/auth/[..
 
 ## WebSocket Integration
 The `utils/socket.ts` file sets up a **Socket.IO** client to connect to the backend for real-time task updates:
-* Events Handled:
-  * **taskCreated**: Emitted when a new task is created.
-  * **taskStatusUpdated**: Emitted when a task’s status is changed.
-  * **taskDeleted**: Emitted when a task is deleted.
-  * **commentAdded**: Emitted when a new comment is added.
-* **Room**: Clients join a tenant-specific room (joinTenantRoom(tenantId)) to receive updates.
+* **Responsibilities**:
+  * **Connection**: Establishes connection to the backend WebSocket server via `NEXT_PUBLIC_SOCKET_URL`.
+  * **Room Join**: Exposes `joinTenantRoom(tenantId)` to subscribe to a tenant-specific channel.
+* **Event handling** (e.g., `taskCreated`, `commentAdded`) is implemented within individual components that need real-time updates.
 
 
 ## Configuration Notes
