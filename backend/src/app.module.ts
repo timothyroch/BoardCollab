@@ -23,15 +23,27 @@ import { HealthController } from './health/health.controller';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-       type: 'postgres',
-       url: config.get<string>('DATABASE_URL'),
-        ssl: {
-          rejectUnauthorized: false,
-        },
-      autoLoadEntities: true, 
-      synchronize: true, 
-      }),     
+      useFactory: (config: ConfigService) => {
+        const isDev = config.get<string>('NODE_ENV') === 'development';
+        return isDev
+          ? {
+              type: 'postgres',
+              host: config.get<string>('DB_HOST', 'postgres'),
+              port: parseInt(config.get<string>('DB_PORT', '5432')),
+              username: config.get<string>('DB_USERNAME', 'tim'),
+              password: config.get<string>('DB_PASSWORD', 'password'),
+              database: config.get<string>('DB_NAME', 'boardcollab'),
+              autoLoadEntities: true,
+              synchronize: true,
+            }
+          : {
+              type: 'postgres',
+              url: config.get<string>('DATABASE_URL'),
+              ssl: { rejectUnauthorized: false },
+              autoLoadEntities: true,
+              synchronize: true,
+            };
+      },    
     }),
     AuthModule,
     TasksModule,

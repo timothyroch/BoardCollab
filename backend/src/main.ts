@@ -1,3 +1,7 @@
+if (process.env.NODE_ENV !== 'production' && typeof global.crypto === 'undefined') {
+  const { webcrypto } = require('crypto');
+  (global as any).crypto = webcrypto;
+}
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
