@@ -42,9 +42,11 @@ useEffect(() => {
     try {
       const res = await fetch(`/api/get-tenants?userId=${userId}`);
       const data = await res.json();
-      setUserTenants(data);
+      const list = Array.isArray(data) ? data : Array.isArray(data?.tenants) ? data.tenants : [];
+      setUserTenants(list);
     } catch (err) {
       console.error('Failed to fetch tenants', err);
+      setUserTenants([]);
     }
   };
 

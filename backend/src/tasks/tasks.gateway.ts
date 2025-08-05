@@ -12,7 +12,8 @@ import { Injectable } from '@nestjs/common';
 @Injectable()
 @WebSocketGateway({
   cors: {
-    origin: 'http://localhost:3000',
+    origin: ['http://localhost:3000','https://gitsync.vercel.app',
+      'https://backend-red-fog-3909.fly.dev'],
     credentials: true,
   },
 })
