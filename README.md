@@ -112,7 +112,7 @@ docker-compose up --build
 
 ## License
 
-**MIT License**. See LICENSE for details.
+**MIT License**. See [LICENSE](https://github.com/timothyroch/GitSync/blob/main/LICENSE) for details.
 
 
 ## Contact
