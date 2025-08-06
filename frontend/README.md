@@ -357,7 +357,7 @@ The `utils/socket.ts` file sets up a **Socket.IO** client to connect to the back
 
 ## License
 
-**MIT License**. See LICENSE for details.
+**MIT License**. See [LICENSE](https://github.com/timothyroch/GitSync/blob/main/LICENSE) for details.
 
 
 ## Contact
